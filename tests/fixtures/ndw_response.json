@@ -19,7 +19,7 @@
             "total": 3,
             "connector_type": "IEC_62196_T2",
             "connector_format": "SOCKET",
-            "power_max": 22,
+            "power_max": 22080.0,
             "power_type": "AC_3_PHASE",
             "tariff_ids": ["T1"]
           },
@@ -28,7 +28,7 @@
             "total": 1,
             "connector_type": "COMBO_CCS",
             "connector_format": "CABLE",
-            "power_max": 150,
+            "power_max": 150000.0,
             "power_type": "DC",
             "tariff_ids": ["T2"]
           }

@@ -9,6 +9,15 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] - 2026-07-11
+
+### Bugfix
+- **NDW-provider (`providers/ndw.py`)**: `power_max` uit de live NDW DOT-NL-respons staat in **Watt**, niet kW. Hierdoor toonden sensoren en notificaties het maximale laadvermogen 1000x te hoog (bv. "22080 kW" i.p.v. "22 kW"). Gevonden en bevestigd door de live API daadwerkelijk aan te roepen (bbox rond Amsterdam, 2026-07-11) na een gebruikersmelding over afwijkende beschikbaarheidscijfers t.o.v. Google Maps. Opgelost door `power_max` te delen door 1000 vóór opslag in het interne model.
+- Twee van de drie in Fase 1 gemarkeerde NDW-aannames zijn hiermee alsnog geverifieerd tegen een echte respons: de live API vereist geen authenticatie, en de veldnamen (`availabilities[]`, `available`, `total`, `connector_type`, `power_max`) kloppen exact. Bijgewerkt in `providers/ndw.py`-moduledocstring en `tests/fixtures/ndw_response.json` (realistische Watt-waarden i.p.v. reeds-in-kW-waarden).
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Geen config-entry-impact; terugzetten naar v1.0.1 herstelt de vermogens-weergavebug maar heeft verder geen risico.
+
 ## [1.0.1] - 2026-07-11
 
 ### Gewijzigd

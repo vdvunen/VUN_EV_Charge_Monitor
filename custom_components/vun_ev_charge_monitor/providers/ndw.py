@@ -6,24 +6,31 @@ NDW DOT-NL provider — primaire databron (zie FASE1-ONDERZOEK-EN-ARCHITECTUUR.m
 §1.1 / §2). Haalt actuele laadpuntdata op via de bbox-GeoJSON API en
 normaliseert deze naar het interne datamodel.
 
-BELANGRIJKE AANNAMES (zie FASE1-onderzoek §7, te verifiëren voordat dit
-richting v1.0.0 gaat):
-1. Het exacte authenticatiemechanisme van de live dotnl.ndw.nu-API kon niet
-   worden geverifieerd tegen publiek toegankelijke documentatie. Deze
-   implementatie stuurt een optionele Bearer-token mee wanneer een API-key
-   is geconfigureerd, en behandelt HTTP 401/403 als ongeldige auth. Werkt de
-   API zonder key, dan functioneert dit pad ook zonder key.
-2. NDW's live respons bevestigt alleen een geaggregeerd `available`/`total`
-   per connectortype per locatie — geen bevestigde per-EVSE statusgranulariteit.
-   Deze provider construeert daarom synthetische EVSE-records: `available`
-   EVSE's met status AVAILABLE en (`total` - `available`) EVSE's met status
-   OCCUPIED per connectorgroep. Dit is een bewuste, gedocumenteerde
-   benadering — geen aanname die stilzwijgend als "zekere data" wordt
-   gepresenteerd (`realtime_data_available` blijft desondanks True, omdat de
-   aantallen zelf wel actueel/realtime zijn).
-3. Exacte NDW-waarden voor `connector_type` zijn niet bevestigd; er wordt een
-   defensieve, tolerante mapping gebruikt (substring-matching) die veilig
-   terugvalt op ConnectorType.UNKNOWN bij onbekende waarden i.p.v. te crashen.
+GEVERIFIEERD tegen de live dotnl.ndw.nu-API op 2026-07-11 (bbox rond
+Amsterdam), ter vervanging van de eerdere ongeverifieerde aannames uit
+FASE1-onderzoek §7:
+1. **Authenticatie**: de live bbox-API accepteert requests zonder API-key
+   of Authorization-header. De optionele Bearer-token blijft ondersteund
+   voor het geval dit in de toekomst verplicht wordt.
+2. **Veldnamen**: `availabilities[]` met `available`/`total`/`connector_type`/
+   `connector_format`/`power_max`/`power_type`/`tariff_ids` komt exact overeen
+   met de aangenomen structuur — geen wijziging nodig.
+3. **`power_max`-eenheid**: bevestigd in **Watt**, niet kW (bv. `22080.0` voor
+   een 22 kW-lader) — hieronder gedeeld door 1000 vóór opslag in het model.
+   Dit was tot 2026-07-11 een ongedetecteerde bug (vermogens werden 1000x te
+   hoog getoond in sensoren en notificaties).
+
+Nog altijd een bewuste, gedocumenteerde benadering (niet stilzwijgend als
+"zekere data" gepresenteerd):
+- NDW's live respons geeft alleen een geaggregeerd `available`/`total` per
+  connectortype per locatie — geen per-EVSE statusgranulariteit. Deze
+  provider construeert daarom synthetische EVSE-records: `available` EVSE's
+  met status AVAILABLE en (`total` - `available`) EVSE's met status OCCUPIED
+  per connectorgroep. `realtime_data_available` blijft desondanks True, omdat
+  de aantallen zelf wel actueel/realtime zijn.
+- Exacte NDW-waarden voor `connector_type` (bv. `IEC_62196_T2`) zijn bevestigd
+  voor Type 2; overige typen gebruiken nog steeds een defensieve, tolerante
+  mapping (substring-matching) die veilig terugvalt op ConnectorType.UNKNOWN.
 """
 
 from __future__ import annotations
@@ -106,7 +113,9 @@ def _build_evses(properties: dict[str, Any]) -> tuple[tuple[Evse, ...], bool]:
         connector_type = map_connector_type(group.get("connector_type"))
         power_max_raw = group.get("power_max")
         try:
-            power_max = float(power_max_raw) if power_max_raw is not None else None
+            # NDW levert power_max in Watt (geverifieerd tegen de live bbox-API
+            # op 2026-07-11, bv. 22080.0 voor een 22 kW-lader) — omrekenen naar kW.
+            power_max = float(power_max_raw) / 1000 if power_max_raw is not None else None
         except (TypeError, ValueError):
             power_max = None
 
