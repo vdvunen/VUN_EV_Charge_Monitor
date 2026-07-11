@@ -11,7 +11,7 @@ from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "vun_ev_charge_monitor"
-INTEGRATION_VERSION: Final = "1.2.0"
+INTEGRATION_VERSION: Final = "1.3.0"
 MANUFACTURER: Final = "Vincent van Unen"
 MODEL: Final = "VUN EV Charge Monitor"
 CONFIGURATION_URL: Final = "https://github.com/vdvunen/VUN_EV_Charge_Monitor"
@@ -160,6 +160,15 @@ SIGNAL_ZONE_ENTERED: Final = f"{DOMAIN}_zone_entered"
 # person-entiteit en de daaraan gekoppelde device_tracker binnen dezelfde
 # seconde allebei een zone-entry-event afvuren (opdracht §15).
 ZONE_ENTRY_DEBOUNCE: Final = timedelta(seconds=5)
+
+# --- Kaartmarkers (geo_location-platform) -----------------------------------
+# Statisch geserveerd vanuit custom_components/vun_ev_charge_monitor/markers/
+# via hass.http.async_register_static_paths (opdracht: gebruikersverzoek om
+# laadlocaties als rood/oranje/groen op een map-kaart te tonen).
+MARKERS_URL_PATH: Final = "/vun_ev_charge_monitor_markers"
+MARKER_FILE_RED: Final = "marker-red.png"  # 0 beschikbaar
+MARKER_FILE_ORANGE: Final = "marker-orange.png"  # 1 beschikbaar
+MARKER_FILE_GREEN: Final = "marker-green.png"  # 2 of meer beschikbaar
 
 # --- Events -------------------------------------------------------------
 EVENT_TYPE_ZONE_ENTERED: Final = "zone_entered"

@@ -194,6 +194,38 @@ aanvragen laag te houden.
 Elke laadlocatie krijgt een kant-en-klare Google Maps-navigatielink
 (`sensor.navigation_url` en in elke serviceresponse).
 
+## Laadlocaties op de kaart
+
+Naast de sensoren maakt de integratie tot `max_results` `geo_location`-
+entiteiten aan (`geo_location.<zone>_map_marker_0` t/m `_<max_results-1>`) —
+één per huidige topresultaat, met de exacte coördinaten van de laadlocatie.
+Voeg ze toe aan een standaard Home Assistant `map`-kaart om ze als gekleurde
+punten te zien:
+
+```yaml
+- type: map
+  entities:
+    - entity: geo_location.laadpaal_map_marker_0
+    - entity: geo_location.laadpaal_map_marker_1
+    - entity: geo_location.laadpaal_map_marker_2
+    - entity: geo_location.laadpaal_map_marker_3
+    - entity: geo_location.laadpaal_map_marker_4
+```
+
+De marker-kleur volgt automatisch de beschikbaarheid van die locatie:
+
+| Kleur | Betekenis |
+|---|---|
+| 🔴 Rood | 0 aansluitingen beschikbaar |
+| 🟠 Oranje | 1 aansluiting beschikbaar |
+| 🟢 Groen | 2 of meer aansluitingen beschikbaar |
+
+Een marker-"slot" toont altijd de huidige #N-locatie uit de resultatenlijst
+— welke fysieke laadpaal dat is kan dus tussen updates wisselen (net als bij
+de "Beste laadlocatie"-sensor). Is er geen locatie meer op die positie (bv.
+omdat er minder dan `max_results` locaties gevonden zijn), dan wordt die
+marker automatisch "unavailable" en niet op de kaart getoond.
+
 ## Simulatiemodus
 
 Schakel simulatiemodus in tijdens het toevoegen of via de opties om de

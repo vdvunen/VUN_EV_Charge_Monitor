@@ -9,6 +9,20 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-07-11
+
+### Toegevoegd
+- **Laadlocaties op de kaart** (`geo_location.py`, nieuw platform): tot `max_results` `geo_location`-entiteiten met de exacte coördinaten van de huidige topresultaten, direct bruikbaar in een standaard Home Assistant `map`-kaart.
+- Rood/oranje/groen marker-afbeeldingen (`markers/marker-{red,orange,green}.png`) op basis van het aantal beschikbare aansluitingen (0 / 1 / 2+), geserveerd via `hass.http.async_register_static_paths` (idempotent over meerdere config entries).
+- Vaste "slot"-entiteiten (`map_marker_0` .. `map_marker_<max_results-1>`) i.p.v. dynamisch aanmaken/verwijderen per update — een marker toont altijd de huidige #N-locatie en wordt `unavailable` (dus niet op de kaart getoond) zodra er geen locatie meer op die positie staat. Blijft binnen opdracht §17 (geen entity per laadpaal): het aantal is begrensd tot `max_results`, niet tot het totaal aantal gevonden laadpalen.
+- Tests: `test_geo_location.py` (kleurlogica + lege-slot-gedrag).
+
+### Aanleiding
+Gebruikersverzoek: de gevonden laadpalen visueel op een kaart zien, met een directe rood/oranje/groen-indicatie van beschikbaarheid in plaats van alleen tekstuele sensoren.
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Verwijder eventueel handmatig toegevoegde `map`-kaarten met deze entiteiten uit het dashboard — die tonen na verwijdering "entity not found".
+
 ## [1.2.0] - 2026-07-11
 
 ### Toegevoegd

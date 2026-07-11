@@ -10,8 +10,10 @@ laat reload volledig over aan OptionsFlowWithReload.
 from __future__ import annotations
 
 import logging
+import os
 from dataclasses import dataclass
 
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, Platform
 from homeassistant.core import HomeAssistant
@@ -24,6 +26,8 @@ from .const import (
     CONF_SIMULATION_MODE,
     CONF_ZONE,
     DEFAULT_SIMULATION_MODE,
+    DOMAIN,
+    MARKERS_URL_PATH,
     NDW_BACKOFF_BASE_S,
     NDW_CONNECT_TIMEOUT_S,
     NDW_MAX_RETRIES,
@@ -57,7 +61,26 @@ PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
     Platform.BUTTON,
     Platform.EVENT,
+    Platform.GEO_LOCATION,
 ]
+
+_MARKERS_DIR = os.path.join(os.path.dirname(__file__), "markers")
+_MARKERS_REGISTERED_KEY = f"{DOMAIN}_markers_static_path_registered"
+
+
+async def _async_register_marker_static_path(hass: HomeAssistant) -> None:
+    """Registreer de map-marker-afbeeldingen als statische bestanden (idempotent).
+
+    Meerdere config entries (bv. meerdere zones) delen dezelfde marker-
+    afbeeldingen en dus hetzelfde URL-pad — een tweede registratiepoging zou
+    een aiohttp-routeconflict opleveren, vandaar deze hass.data-vlag.
+    """
+    if hass.data.get(_MARKERS_REGISTERED_KEY):
+        return
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig(MARKERS_URL_PATH, _MARKERS_DIR, cache_headers=True)]
+    )
+    hass.data[_MARKERS_REGISTERED_KEY] = True
 
 
 @dataclass(slots=True)
@@ -129,6 +152,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: VunEvConfigEntry) -> boo
     entry.runtime_data = VunEvRuntimeData(coordinator=coordinator, zone_tracker=zone_tracker)
 
     async_register_services(hass)
+    await _async_register_marker_static_path(hass)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

@@ -121,7 +121,9 @@ notificaties. Alle instellingen zijn achteraf aanpasbaar via
 13 sensoren (o.a. beschikbare laadlocaties/aansluitingen, beste locatie met
 afstand/vermogen/operator/adres/navigatielink, API-status), 3 binary
 sensors (laadlocatie beschikbaar, API beschikbaar, data verouderd), 2
-buttons (vernieuwen, testmelding), 1 event-entiteit. Zie
+buttons (vernieuwen, testmelding), 1 event-entiteit, en tot `max_results`
+kaartmarker-entiteiten (`geo_location`) — rood/oranje/groen op basis van
+beschikbaarheid, direct bruikbaar in een `map`-kaart. Zie
 `USER_DOCUMENTATION.md` voor het volledige overzicht en welke sensoren
 standaard uitgeschakeld zijn.
 
