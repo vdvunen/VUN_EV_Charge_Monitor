@@ -28,6 +28,8 @@ Geen overige test-dependencies nodig; `pytest-asyncio` en overige testtooling wo
 
 `pyflakes` is tijdens de Fase 6-reviewpass eenmalig los geïnstalleerd voor statische analyse (onbevestigde imports/dead code). Dit is een ontwikkeltool, niet toegevoegd aan `requirements_test.txt` — geen doorlopende CI-dependency, puur gebruikt als eenmalige controle tijdens deze oplevering.
 
+`python-docx` en `Pillow` zijn eveneens eenmalig los geïnstalleerd, respectievelijk voor het genereren van `User_Documentation.docx` (Fase 6) en het brand-icoon (`brand/icon.png`/`icon@2x.png`). Beide zijn documentatie-/asset-generatietools, niet opgenomen in `requirements_test.txt` of `manifest.json` — de gegenereerde output (het `.docx`-bestand, de PNG's) is wat wordt opgeleverd, niet de tool zelf.
+
 ## Providers (Fase 5, afgerond)
 
 TomTom en Open Charge Map zijn geïmplementeerd zonder extra runtime-

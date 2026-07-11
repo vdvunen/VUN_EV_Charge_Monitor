@@ -9,6 +9,14 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-07-11
+
+### Toegevoegd
+- Brand-icoon (`custom_components/vun_ev_charge_monitor/brand/icon.png`, 256×256, en `icon@2x.png`, 512×512, transparante achtergrond): drie afgeronde blokken "V·U·N", middelste blok in mint aqua met een bliksem-accent, buitenste blokken in Pruisischblauw. Gekozen na een verkenning van 5 richtingen. Wordt door Home Assistant automatisch geserveerd via `/api/brands/integration/vun_ev_charge_monitor/icon.png` zodra de `brand/`-map aanwezig is — geen pull request naar `home-assistant/brands` nodig.
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/brand/` om terug te vallen op het standaard Home Assistant-integratie-icoon. Geen functionele impact, puur visueel.
+
 ## [1.0.3] - 2026-07-11
 
 ### Bugfix (kritiek)
