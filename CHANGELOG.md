@@ -9,6 +9,17 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.0.3] - 2026-07-11
+
+### Bugfix (kritiek)
+- **NDW-provider (`providers/ndw.py`)**: de live API plaatst `id` als lid van het GeoJSON Feature-object zelf (naast `geometry`/`properties`), niet binnen `properties` zoals de code aannam. Hierdoor faalde `properties.get("id")` voor **elke** locatie, en werd de complete respons stilzwijgend als "ongeldig" afgewezen — resultaat: altijd 0 laadlocaties gevonden, ongeacht echte NDW-dekking. Gevonden door een gebruikersmelding te herleiden: eerst leek het een radius-/providerkeuzeprobleem (gebruiker stond op Open Charge Map, dat inherent geen bezettingsdata heeft — geen bug), maar na omzetten naar NDW bleef "0 gevonden" bestaan. De live payload is vervolgens letterlijk door onze eigen parsingcode gehaald (163 raw features → 0 geparste locaties), wat de exacte breukregel blootlegde.
+- Opgelost door `feature.get("id")` als primaire bron te gebruiken, met `properties.get("id")` als defensieve fallback. `evse_id`-constructie in `_build_evses()` gebruikt nu ook de correct opgeloste `location_id` i.p.v. de altijd-lege `properties["id"]`.
+- Fixture (`tests/fixtures/ndw_response.json`) en `test_providers.py` bijgewerkt om de echte Feature-structuur te weerspiegelen, met een expliciete regressietest voor beide id-locaties (Feature-niveau primair, properties-niveau als fallback).
+- Geverifieerd tegen een echte live NDW-respons (163 features rond een gebruikerslocatie): na de fix worden 38 locaties binnen 1500m correct gevonden met kloppende beschikbaarheids- en vermogenscijfers.
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Geen config-entry-impact. **Let op:** terugzetten naar v1.0.2 of eerder herintroduceert de "altijd 0 laadlocaties met NDW"-bug.
+
 ## [1.0.2] - 2026-07-11
 
 ### Bugfix

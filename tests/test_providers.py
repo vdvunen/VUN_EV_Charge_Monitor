@@ -47,11 +47,35 @@ async def test_normalizes_valid_features_and_skips_invalid(ndw_geojson_response)
         latitude=_ORIGIN_LAT, longitude=_ORIGIN_LON, radius_m=20000, max_results=10
     )
 
-    # 4 features in fixture: 2 geldig, 1 met ongeldige coördinaten, 1 zonder id.
-    assert len(result.locations) == 2
+    # 5 features in fixture: 3 geldig, 1 met ongeldige coördinaten, 1 zonder id.
+    assert len(result.locations) == 3
     ids = {loc.provider_location_id for loc in result.locations}
-    assert ids == {"NDW-TEST-001", "NDW-TEST-002"}
+    assert ids == {"NDW-TEST-001", "NDW-TEST-002", "NDW-TEST-003-PROPERTIES-ID-FALLBACK"}
     assert result.source_name == "NDW DOT-NL"
+
+
+async def test_feature_id_read_from_feature_level(ndw_geojson_response) -> None:
+    """De live NDW-API plaatst 'id' op Feature-niveau, niet in properties (regressietest)."""
+    provider = NdwProvider(FakeApiClient(payload=ndw_geojson_response))
+
+    result = await provider.async_get_locations(
+        latitude=_ORIGIN_LAT, longitude=_ORIGIN_LON, radius_m=20000, max_results=10
+    )
+
+    location = next(loc for loc in result.locations if loc.provider_location_id == "NDW-TEST-001")
+    assert location is not None
+
+
+async def test_feature_id_falls_back_to_properties_id(ndw_geojson_response) -> None:
+    """Defensieve fallback: als 'id' toch (ook) in properties staat, moet dat ook werken."""
+    provider = NdwProvider(FakeApiClient(payload=ndw_geojson_response))
+
+    result = await provider.async_get_locations(
+        latitude=_ORIGIN_LAT, longitude=_ORIGIN_LON, radius_m=20000, max_results=10
+    )
+
+    ids = {loc.provider_location_id for loc in result.locations}
+    assert "NDW-TEST-003-PROPERTIES-ID-FALLBACK" in ids
 
 
 async def test_connector_type_mapping(ndw_geojson_response) -> None:

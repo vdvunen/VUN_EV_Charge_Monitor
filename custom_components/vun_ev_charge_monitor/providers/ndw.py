@@ -90,7 +90,7 @@ def _parse_timestamp(raw: Any) -> datetime | None:
     return dt_util.parse_datetime(raw)
 
 
-def _build_evses(properties: dict[str, Any]) -> tuple[tuple[Evse, ...], bool]:
+def _build_evses(properties: dict[str, Any], location_id: str) -> tuple[tuple[Evse, ...], bool]:
     """Bouw EVSE-records uit `availabilities[]`. Zie aanname 2 in moduledocstring."""
     availabilities = properties.get("availabilities")
     if not isinstance(availabilities, list) or not availabilities:
@@ -125,7 +125,7 @@ def _build_evses(properties: dict[str, Any]) -> tuple[tuple[Evse, ...], bool]:
             evse_index += 1
             evses.append(
                 Evse(
-                    evse_id=f"{properties.get('id', 'unknown')}-{evse_index}",
+                    evse_id=f"{location_id}-{evse_index}",
                     status=ChargePointStatus.AVAILABLE,
                     connectors=(connector,),
                 )
@@ -134,7 +134,7 @@ def _build_evses(properties: dict[str, Any]) -> tuple[tuple[Evse, ...], bool]:
             evse_index += 1
             evses.append(
                 Evse(
-                    evse_id=f"{properties.get('id', 'unknown')}-{evse_index}",
+                    evse_id=f"{location_id}-{evse_index}",
                     status=ChargePointStatus.OCCUPIED,
                     connectors=(connector,),
                 )
@@ -163,11 +163,15 @@ def _feature_to_location(
     if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
         return None
 
-    location_id = properties.get("id")
+    # De live API plaatst "id" als lid van het Feature-object zelf (naast
+    # "geometry"/"properties"), niet binnen "properties" — bevestigd tegen
+    # de echte respons op 2026-07-11. "properties.id" wordt defensief als
+    # fallback gecontroleerd voor het geval een CPO dit toch anders levert.
+    location_id = feature.get("id") or properties.get("id")
     if not location_id:
         return None
 
-    evses, realtime_available = _build_evses(properties)
+    evses, realtime_available = _build_evses(properties, str(location_id))
     distance_m = ha_distance(origin_lat, origin_lon, latitude, longitude)
 
     return ChargeLocation(

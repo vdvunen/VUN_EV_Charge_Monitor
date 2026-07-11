@@ -3,9 +3,9 @@
   "features": [
     {
       "type": "Feature",
+      "id": "NDW-TEST-001",
       "geometry": { "type": "Point", "coordinates": [4.895, 52.370] },
       "properties": {
-        "id": "NDW-TEST-001",
         "address": "Teststraat 1, Amsterdam",
         "country": "NL",
         "cpo_id": "CPO123",
@@ -37,14 +37,37 @@
     },
     {
       "type": "Feature",
+      "id": "NDW-TEST-002",
       "geometry": { "type": "Point", "coordinates": [4.9, 52.372] },
       "properties": {
-        "id": "NDW-TEST-002",
         "address": "Teststraat 2, Amsterdam",
         "country": "NL",
         "operator_name": "Second Operator",
         "last_updated": "2026-07-10T15:55:00+00:00",
         "availabilities": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NDW-TEST-003-PROPERTIES-ID-FALLBACK",
+      "geometry": { "type": "Point", "coordinates": [4.891, 52.3705] },
+      "properties": {
+        "id": "NDW-TEST-003-PROPERTIES-ID-FALLBACK",
+        "address": "Teststraat 3, Amsterdam",
+        "country": "NL",
+        "operator_name": "Third Operator",
+        "last_updated": "2026-07-10T15:50:00+00:00",
+        "availabilities": [
+          {
+            "available": 1,
+            "total": 1,
+            "connector_type": "IEC_62196_T2",
+            "connector_format": "SOCKET",
+            "power_max": 11000.0,
+            "power_type": "AC_1_PHASE",
+            "tariff_ids": ["T1"]
+          }
+        ]
       }
     },
     {
