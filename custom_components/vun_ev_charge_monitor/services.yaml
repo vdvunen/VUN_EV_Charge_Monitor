@@ -1,0 +1,19 @@
+# Developed by Vincent van Unen
+# Website: https://www.unen.nl
+# Email: code@unen.nl
+
+get_nearby_chargers:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: vun_ev_charge_monitor
+    max_results:
+      required: false
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 20
+          mode: box

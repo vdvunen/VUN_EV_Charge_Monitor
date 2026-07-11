@@ -1,0 +1,38 @@
+{
+  "results": [
+    {
+      "id": "tomtom-1",
+      "position": { "lat": 52.3705, "lon": 4.896 },
+      "poi": { "name": "TomTom Test Station", "brands": [{ "name": "Test Brand" }] },
+      "address": {
+        "freeformAddress": "Teststraat 5, Amsterdam",
+        "postalCode": "1000AA",
+        "municipality": "Amsterdam",
+        "country": "NL"
+      },
+      "lastUpdateTime": "2026-07-10T16:00:00+00:00",
+      "chargingStations": [
+        {
+          "chargingPoints": [
+            {
+              "id": "cp-1",
+              "evseId": "NL-TT-E1",
+              "status": "Available",
+              "connectors": [{ "type": "IEC62196Type2Outlet", "ratedPowerKW": 22 }]
+            },
+            {
+              "id": "cp-2",
+              "evseId": "NL-TT-E2",
+              "status": "Occupied",
+              "connectors": [{ "type": "IEC62196Type2CCS", "ratedPowerKW": 150 }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tomtom-invalid",
+      "poi": {}
+    }
+  ]
+}

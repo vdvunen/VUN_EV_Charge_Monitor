@@ -1,0 +1,236 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "VUN EV Charge Monitor",
+        "description": "Kies de Home Assistant-zone waarrond gezocht wordt en de databron.",
+        "data": {
+          "zone": "Zone",
+          "provider": "Provider",
+          "api_key": "API-key (optioneel, alleen indien vereist door de provider)",
+          "simulation_mode": "Simulatiemodus (gebruik lokale testdata, geen echte API-calls)"
+        }
+      },
+      "tracking": {
+        "title": "Gevolgde personen en apparaten",
+        "description": "Selecteer de persoon/personen en/of device tracker(s) waarvan het binnenkomen van de zone gevolgd moet worden.",
+        "data": {
+          "tracked_entities": "Personen / device trackers"
+        }
+      },
+      "search": {
+        "title": "Zoekopties",
+        "description": "Stel in hoe laadlocaties gezocht en gefilterd worden.",
+        "data": {
+          "use_zone_radius": "Gebruik de radius van de zone zelf",
+          "radius": "Zoekradius",
+          "max_results": "Maximaal aantal resultaten",
+          "connector_types": "Connectortypen (leeg = alle)",
+          "min_power_kw": "Minimaal vermogen",
+          "update_interval": "Update-interval",
+          "max_data_age": "Maximumleeftijd van data"
+        }
+      },
+      "notifications": {
+        "title": "Meldingen",
+        "description": "Stel in hoe en wanneer je een melding krijgt over laadlocaties in de buurt.",
+        "data": {
+          "notification_target": "Notificatiedoel",
+          "notify_on_zone_entry": "Melding bij binnenkomst zone",
+          "notify_on_availability_change": "Melding bij wijziging beschikbaarheid",
+          "notification_cooldown": "Cooldown tussen meldingen",
+          "language": "Taal van meldingen"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Opnieuw aanmelden bij VUN EV Charge Monitor",
+        "description": "De geconfigureerde API-key is niet meer geldig. Voer een nieuwe API-key in.",
+        "data": {
+          "api_key": "API-key"
+        }
+      }
+    },
+    "error": {
+      "invalid_zone": "De geselecteerde zone kon niet worden gevonden of heeft geen geldige coördinaten.",
+      "invalid_entity": "Selecteer minimaal één bestaande persoon of device tracker.",
+      "invalid_notification_service": "Het geselecteerde notificatiedoel kon niet worden gevonden.",
+      "invalid_radius": "De zoekradius valt buiten het toegestane bereik.",
+      "invalid_interval": "Het update-interval valt buiten het toegestane bereik.",
+      "cannot_connect": "Kan geen verbinding maken met de provider.",
+      "invalid_auth": "De API-key is geweigerd door de provider, of de provider vereist een API-key die niet is opgegeven.",
+      "rate_limited": "De provider limiteert het aantal aanvragen. Probeer het later opnieuw.",
+      "unsupported_provider": "Deze provider wordt nog niet ondersteund.",
+      "unknown": "Er is een onverwachte fout opgetreden."
+    },
+    "abort": {
+      "already_configured": "Deze zone is al geconfigureerd.",
+      "reauth_successful": "Opnieuw aanmelden is gelukt.",
+      "reconfigure_successful": "Herconfiguratie is gelukt."
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "VUN EV Charge Monitor",
+        "description": "Kies de Home Assistant-zone waarrond gezocht wordt en de databron.",
+        "data": {
+          "zone": "Zone",
+          "provider": "Provider",
+          "api_key": "API-key (optioneel, alleen indien vereist door de provider)",
+          "simulation_mode": "Simulatiemodus (gebruik lokale testdata, geen echte API-calls)"
+        }
+      },
+      "tracking": {
+        "title": "Gevolgde personen en apparaten",
+        "description": "Selecteer de persoon/personen en/of device tracker(s) waarvan het binnenkomen van de zone gevolgd moet worden.",
+        "data": {
+          "tracked_entities": "Personen / device trackers"
+        }
+      },
+      "search": {
+        "title": "Zoekopties",
+        "description": "Stel in hoe laadlocaties gezocht en gefilterd worden.",
+        "data": {
+          "use_zone_radius": "Gebruik de radius van de zone zelf",
+          "radius": "Zoekradius",
+          "max_results": "Maximaal aantal resultaten",
+          "connector_types": "Connectortypen (leeg = alle)",
+          "min_power_kw": "Minimaal vermogen",
+          "update_interval": "Update-interval",
+          "max_data_age": "Maximumleeftijd van data"
+        }
+      },
+      "notifications": {
+        "title": "Meldingen",
+        "description": "Stel in hoe en wanneer je een melding krijgt over laadlocaties in de buurt.",
+        "data": {
+          "notification_target": "Notificatiedoel",
+          "notify_on_zone_entry": "Melding bij binnenkomst zone",
+          "notify_on_availability_change": "Melding bij wijziging beschikbaarheid",
+          "notification_cooldown": "Cooldown tussen meldingen",
+          "language": "Taal van meldingen"
+        }
+      }
+    },
+    "error": {
+      "invalid_zone": "De geselecteerde zone kon niet worden gevonden of heeft geen geldige coördinaten.",
+      "invalid_entity": "Selecteer minimaal één bestaande persoon of device tracker.",
+      "invalid_notification_service": "Het geselecteerde notificatiedoel kon niet worden gevonden.",
+      "invalid_radius": "De zoekradius valt buiten het toegestane bereik.",
+      "invalid_interval": "Het update-interval valt buiten het toegestane bereik.",
+      "cannot_connect": "Kan geen verbinding maken met de provider.",
+      "invalid_auth": "De API-key is geweigerd door de provider, of de provider vereist een API-key die niet is opgegeven.",
+      "rate_limited": "De provider limiteert het aantal aanvragen. Probeer het later opnieuw.",
+      "unsupported_provider": "Deze provider wordt nog niet ondersteund.",
+      "unknown": "Er is een onverwachte fout opgetreden."
+    }
+  },
+  "selector": {
+    "provider": {
+      "options": {
+        "ndw": "NDW DOT-NL (Nederland, officiële open dataset)",
+        "tomtom": "TomTom (vereist eigen API-key)",
+        "open_charge_map": "Open Charge Map (alleen statische locatiedata, vereist eigen API-key)"
+      }
+    },
+    "connector_type": {
+      "options": {
+        "type_2": "Type 2",
+        "ccs": "CCS",
+        "chademo": "CHAdeMO",
+        "type_1": "Type 1",
+        "domestic": "Huishoudstekker"
+      }
+    },
+    "language": {
+      "options": {
+        "nl": "Nederlands",
+        "en": "English"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "available_locations": { "name": "Beschikbare laadlocaties" },
+      "available_connectors": { "name": "Beschikbare aansluitingen" },
+      "total_locations": { "name": "Totaal aantal laadlocaties" },
+      "total_connectors": { "name": "Totaal aantal aansluitingen" },
+      "best_location": { "name": "Beste laadlocatie" },
+      "best_location_distance": { "name": "Afstand tot beste locatie" },
+      "best_location_max_power": { "name": "Max. vermogen beste locatie" },
+      "best_location_operator": { "name": "Operator beste locatie" },
+      "best_location_address": { "name": "Adres beste locatie" },
+      "navigation_url": { "name": "Navigatielink" },
+      "last_successful_update": { "name": "Laatste succesvolle update" },
+      "data_source": { "name": "Databron" },
+      "api_status": {
+        "name": "API-status",
+        "state": {
+          "ok": "OK",
+          "cannot_connect": "Geen verbinding",
+          "invalid_auth": "Ongeldige authenticatie",
+          "rate_limited": "Rate limited",
+          "unknown": "Onbekende fout"
+        }
+      }
+    },
+    "binary_sensor": {
+      "charge_location_available": { "name": "Laadlocatie beschikbaar" },
+      "api_available": { "name": "API beschikbaar" },
+      "data_stale": { "name": "Data verouderd" }
+    },
+    "button": {
+      "refresh": { "name": "Vernieuwen" },
+      "send_test_notification": { "name": "Testmelding versturen" }
+    },
+    "event": {
+      "activity": {
+        "name": "Activiteit",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "zone_entered": "Zone binnengekomen",
+              "availability_changed": "Beschikbaarheid gewijzigd",
+              "charger_available": "Laadpunt beschikbaar gekomen",
+              "provider_unavailable": "Provider onbereikbaar"
+            }
+          }
+        }
+      }
+    }
+  },
+  "issues": {
+    "zone_removed": {
+      "title": "Zone bestaat niet meer",
+      "description": "De zone die '{entry_title}' gebruikt ({zone}) bestaat niet meer. Maak de zone opnieuw aan of herconfigureer de integratie om een andere zone te kiezen."
+    },
+    "tracked_entity_removed": {
+      "title": "Gevolgde entiteit bestaat niet meer",
+      "description": "De gevolgde entiteit {entity_id} van '{entry_title}' bestaat niet meer. Herconfigureer de integratie om de geselecteerde personen/device trackers bij te werken."
+    },
+    "provider_unavailable": {
+      "title": "Provider onbereikbaar",
+      "description": "'{entry_title}' kan de databron al meerdere pogingen achtereen niet bereiken. Controleer de netwerkverbinding en eventueel de API-key."
+    },
+    "notification_service_missing": {
+      "title": "Notificatiedoel ontbreekt",
+      "description": "'{entry_title}' heeft meldingen ingeschakeld, maar er is geen geldig notificatiedoel geconfigureerd. Open de opties van de integratie om een notificatiedoel te selecteren."
+    }
+  },
+  "services": {
+    "get_nearby_chargers": {
+      "name": "Laadpunten in de buurt ophalen",
+      "description": "Geeft de huidige topresultaten van laadlocaties terug voor een VUN EV Charge Monitor config entry.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Config entry",
+          "description": "De VUN EV Charge Monitor config entry om te bevragen."
+        },
+        "max_results": {
+          "name": "Maximaal aantal resultaten",
+          "description": "Maximaal aantal laadlocaties dat wordt teruggegeven."
+        }
+      }
+    }
+  }
+}

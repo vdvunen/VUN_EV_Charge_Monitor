@@ -1,0 +1,236 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "VUN EV Charge Monitor",
+        "description": "Choose the Home Assistant zone to search around and the data provider.",
+        "data": {
+          "zone": "Zone",
+          "provider": "Provider",
+          "api_key": "API key (optional, only if the provider requires one)",
+          "simulation_mode": "Simulation mode (use local test data, no real API calls)"
+        }
+      },
+      "tracking": {
+        "title": "Tracked persons and devices",
+        "description": "Select the person(s) and/or device tracker(s) whose zone entry should be monitored.",
+        "data": {
+          "tracked_entities": "Persons / device trackers"
+        }
+      },
+      "search": {
+        "title": "Search options",
+        "description": "Configure how charging locations are searched and filtered.",
+        "data": {
+          "use_zone_radius": "Use the zone's own radius",
+          "radius": "Search radius",
+          "max_results": "Maximum number of results",
+          "connector_types": "Connector types (empty = all)",
+          "min_power_kw": "Minimum power",
+          "update_interval": "Update interval",
+          "max_data_age": "Maximum data age"
+        }
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Configure how and when you are notified about nearby charging locations.",
+        "data": {
+          "notification_target": "Notification target",
+          "notify_on_zone_entry": "Notify on zone entry",
+          "notify_on_availability_change": "Notify on availability change",
+          "notification_cooldown": "Cooldown between notifications",
+          "language": "Notification language"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate VUN EV Charge Monitor",
+        "description": "The configured API key is no longer valid. Enter a new API key.",
+        "data": {
+          "api_key": "API key"
+        }
+      }
+    },
+    "error": {
+      "invalid_zone": "The selected zone could not be found or has no valid coordinates.",
+      "invalid_entity": "Select at least one existing person or device tracker.",
+      "invalid_notification_service": "The selected notification target could not be found.",
+      "invalid_radius": "The search radius is outside the allowed range.",
+      "invalid_interval": "The update interval is outside the allowed range.",
+      "cannot_connect": "Could not connect to the provider.",
+      "invalid_auth": "The API key was rejected by the provider, or the provider requires an API key that was not provided.",
+      "rate_limited": "The provider is rate-limiting requests. Try again later.",
+      "unsupported_provider": "This provider is not supported yet.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This zone is already configured.",
+      "reauth_successful": "Re-authentication was successful.",
+      "reconfigure_successful": "Reconfiguration was successful."
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "VUN EV Charge Monitor",
+        "description": "Choose the Home Assistant zone to search around and the data provider.",
+        "data": {
+          "zone": "Zone",
+          "provider": "Provider",
+          "api_key": "API key (optional, only if the provider requires one)",
+          "simulation_mode": "Simulation mode (use local test data, no real API calls)"
+        }
+      },
+      "tracking": {
+        "title": "Tracked persons and devices",
+        "description": "Select the person(s) and/or device tracker(s) whose zone entry should be monitored.",
+        "data": {
+          "tracked_entities": "Persons / device trackers"
+        }
+      },
+      "search": {
+        "title": "Search options",
+        "description": "Configure how charging locations are searched and filtered.",
+        "data": {
+          "use_zone_radius": "Use the zone's own radius",
+          "radius": "Search radius",
+          "max_results": "Maximum number of results",
+          "connector_types": "Connector types (empty = all)",
+          "min_power_kw": "Minimum power",
+          "update_interval": "Update interval",
+          "max_data_age": "Maximum data age"
+        }
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Configure how and when you are notified about nearby charging locations.",
+        "data": {
+          "notification_target": "Notification target",
+          "notify_on_zone_entry": "Notify on zone entry",
+          "notify_on_availability_change": "Notify on availability change",
+          "notification_cooldown": "Cooldown between notifications",
+          "language": "Notification language"
+        }
+      }
+    },
+    "error": {
+      "invalid_zone": "The selected zone could not be found or has no valid coordinates.",
+      "invalid_entity": "Select at least one existing person or device tracker.",
+      "invalid_notification_service": "The selected notification target could not be found.",
+      "invalid_radius": "The search radius is outside the allowed range.",
+      "invalid_interval": "The update interval is outside the allowed range.",
+      "cannot_connect": "Could not connect to the provider.",
+      "invalid_auth": "The API key was rejected by the provider, or the provider requires an API key that was not provided.",
+      "rate_limited": "The provider is rate-limiting requests. Try again later.",
+      "unsupported_provider": "This provider is not supported yet.",
+      "unknown": "An unexpected error occurred."
+    }
+  },
+  "selector": {
+    "provider": {
+      "options": {
+        "ndw": "NDW DOT-NL (Netherlands, official public dataset)",
+        "tomtom": "TomTom (requires your own API key)",
+        "open_charge_map": "Open Charge Map (static location data only, requires your own API key)"
+      }
+    },
+    "connector_type": {
+      "options": {
+        "type_2": "Type 2",
+        "ccs": "CCS",
+        "chademo": "CHAdeMO",
+        "type_1": "Type 1",
+        "domestic": "Domestic socket"
+      }
+    },
+    "language": {
+      "options": {
+        "nl": "Nederlands",
+        "en": "English"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "available_locations": { "name": "Available charging locations" },
+      "available_connectors": { "name": "Available connectors" },
+      "total_locations": { "name": "Total charging locations" },
+      "total_connectors": { "name": "Total connectors" },
+      "best_location": { "name": "Best charging location" },
+      "best_location_distance": { "name": "Distance to best location" },
+      "best_location_max_power": { "name": "Max power of best location" },
+      "best_location_operator": { "name": "Operator of best location" },
+      "best_location_address": { "name": "Address of best location" },
+      "navigation_url": { "name": "Navigation link" },
+      "last_successful_update": { "name": "Last successful update" },
+      "data_source": { "name": "Data source" },
+      "api_status": {
+        "name": "API status",
+        "state": {
+          "ok": "OK",
+          "cannot_connect": "Cannot connect",
+          "invalid_auth": "Invalid authentication",
+          "rate_limited": "Rate limited",
+          "unknown": "Unknown error"
+        }
+      }
+    },
+    "binary_sensor": {
+      "charge_location_available": { "name": "Charging location available" },
+      "api_available": { "name": "API available" },
+      "data_stale": { "name": "Data stale" }
+    },
+    "button": {
+      "refresh": { "name": "Refresh" },
+      "send_test_notification": { "name": "Send test notification" }
+    },
+    "event": {
+      "activity": {
+        "name": "Activity",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "zone_entered": "Zone entered",
+              "availability_changed": "Availability changed",
+              "charger_available": "Charger became available",
+              "provider_unavailable": "Provider unavailable"
+            }
+          }
+        }
+      }
+    }
+  },
+  "issues": {
+    "zone_removed": {
+      "title": "Zone no longer exists",
+      "description": "The zone used by '{entry_title}' ({zone}) no longer exists. Recreate the zone or reconfigure the integration to select a different zone."
+    },
+    "tracked_entity_removed": {
+      "title": "Tracked entity no longer exists",
+      "description": "The tracked entity {entity_id} used by '{entry_title}' no longer exists. Reconfigure the integration to update the selected persons/device trackers."
+    },
+    "provider_unavailable": {
+      "title": "Provider unavailable",
+      "description": "'{entry_title}' has not been able to reach its data provider for several consecutive attempts. Check your network connection and, if applicable, your API key."
+    },
+    "notification_service_missing": {
+      "title": "Notification target missing",
+      "description": "'{entry_title}' has notifications enabled, but no valid notification target is configured. Open the integration's options to select a notification target."
+    }
+  },
+  "services": {
+    "get_nearby_chargers": {
+      "name": "Get nearby chargers",
+      "description": "Returns the current top charging locations for a VUN EV Charge Monitor config entry.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Config entry",
+          "description": "The VUN EV Charge Monitor config entry to query."
+        },
+        "max_results": {
+          "name": "Maximum results",
+          "description": "Maximum number of charging locations to return."
+        }
+      }
+    }
+  }
+}

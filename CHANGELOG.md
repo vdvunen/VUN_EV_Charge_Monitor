@@ -1,0 +1,110 @@
+<!--
+Developed by Vincent van Unen
+Website: https://www.unen.nl
+Email: code@unen.nl
+-->
+
+# Changelog
+
+Alle relevante wijzigingen aan dit project worden hier bijgehouden.
+Versiebeheer volgt [Semantic Versioning](https://semver.org/).
+
+## [1.0.1] - 2026-07-11
+
+### Gewijzigd
+- `manifest.json`: `codeowners`, `documentation` en `issue_tracker` bijgewerkt naar de echte, publieke repository: https://github.com/vdvunen/VUN_EV_Charge_Monitor (was een placeholder-adres).
+- `PRODUCTION_CHECK.md` bijgewerkt: HACS-manifestvelden zijn nu correct; de daadwerkelijke HACS-validatie-workflow zelf is nog niet uitgevoerd (aanbevolen als eerste CI-stap).
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Zuiver metadata-/documentatiewijziging — geen functionele of config-entry-impact, terugzetten naar v1.0.0 is zonder risico.
+
+## [1.0.0] - 2026-07-10
+
+Eerste stabiele release. Alle zes fases uit de opdracht zijn opgeleverd.
+
+### Toegevoegd
+- Volledige documentatieset: `USER_DOCUMENTATION.md`, `SETUP_DOCUMENTATION.md`, `User_Documentation.docx`, `IMPACT_ANALYSIS.md`, `PRODUCTION_CHECK.md`, uitgebreide `README.md`.
+- Repair-opruiming: alle repair issues van een config entry worden nu verwijderd bij unload/verwijdering (`repairs.async_clear_all_issues_for_entry`) — voorkomt achterblijvende "spooksignalen" in de issue registry.
+- Info-niveau logging bij succesvolle setup (provider + entry-titel, geen gevoelige data).
+
+### Gewijzigd / Security
+- **Beveiligingsfix**: `api.py` interpoleerde in enkele foutmeldingen de volledige tekst van onderliggende `aiohttp`-excepties. Voor `ContentTypeError` embedt die tekst de complete requeststring inclusief querystring — en TomTom verstuurt zijn API-key als queryparameter. Hierdoor kon een API-key in theorie in de Home Assistant-log terechtkomen via de foutmeldingketen (`api.py` → `providers/*.py` → `coordinator.py` → HA's coordinator-warninglog). Opgelost door nergens meer de ruwe exceptietekst over te nemen, alleen het exceptietype (`api.py::_safe_exc_text`). Ook `config_flow.py`'s generieke fout-handler gebruikt niet langer `_LOGGER.exception()` (volledige traceback) maar logt alleen het exceptietype.
+- Bugfix: `CONF_LANGUAGE` werd gebruikt in `config_flow.py` zonder geïmporteerd te zijn — de notificatiestap van de config/optionsflow crashte zodra deze daadwerkelijk gerenderd werd. Gevonden via een `pyflakes`-pas tijdens de Fase 6-reviewpass (niet gevonden door losse module-imports, omdat de fout pas bij functie-aanroep optrad).
+- Dode code opgeruimd: ongebruikte constanten `PLATFORM_*`, `MAX_ZONE_RADIUS_LOOKUP_M`, `ERROR_NO_REALTIME_AVAILABILITY` (en bijbehorende, nooit-gekoppelde vertaalstrings) verwijderd.
+- `manifest.json`-versie bijgewerkt naar `1.0.0`.
+
+### Bekende beperkingen (zie PRODUCTION_CHECK.md voor volledige details)
+- NDW-authenticatiemodel en exacte per-EVSE-statusgranulariteit zijn nog niet tegen een echte live-respons geverifieerd.
+- De volledige testsuite kon in de Windows-ontwikkelomgeving van deze sessie niet 100% via `pytest` uitgevoerd worden (bekende HA-op-Windows-beperking, geen codefout) — aanbevolen om vóór publicatie eenmalig in WSL2/Docker/CI te draaien.
+- `manifest.json`'s `codeowners`/`documentation`/`issue_tracker` bevatten een placeholder-GitHub-adres — vervang dit door het echte repository-adres vóór HACS-publicatie.
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Config entries blijven op `version = 1` — geen datamigratie nodig bij terugzetten naar v0.5.0.
+
+## [0.5.0] - 2026-07-10
+
+### Toegevoegd
+- TomTom-provider (`providers/tomtom.py`) — EV Search API, per-EVSE-status rechtstreeks uit de respons (geen synthetische benadering nodig zoals bij NDW).
+- Open Charge Map-provider (`providers/open_charge_map.py`) — statische locatie-/connectordata, `realtime_data_available` altijd `False`.
+- Gedeelde providerhelpers (`providers/_common.py`): connectortypemapping en navigatie-URL-opbouw, hergebruikt door NDW/TomTom/OCM (voorkomt dubbele logica).
+- Providerselectie in `__init__.py` uitgebreid naar alle drie providers plus simulatiemodus.
+- Service `vun_ev_charge_monitor.get_nearby_chargers` (`services.py`/`services.yaml`) met begrensde, geredacteerde service-response.
+- Tests voor beide nieuwe providers en de service.
+
+### Gewijzigd
+- `SUPPORTED_PROVIDERS` uitgebreid; TomTom/Open Charge Map vereisen verplicht een API-key (afgedwongen door de providers zelf via `ProviderAuthError`, geen dubbele validatielogica in de config flow).
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Bestaande config entries met provider `ndw` blijven ongewijzigd werken bij terugzetten naar v0.3.0.
+
+## [0.4.0] - 2026-07-10
+
+### Toegevoegd
+- Zone-entrydetectie (`zone_tracking.py`): async state-listeners op gevolgde `person`/`device_tracker`-entiteiten, met startup-guard, transitiecontrole, debounce (5s) en cooldown (instelbaar).
+- Notificatielogica (`notifications.py`): drie meldingvarianten (beschikbaar/niets beschikbaar/alleen statische data) in NL/EN, verstuurd via `notify.send_message`.
+- Simulatiemodus (`providers/simulation.py`, `CONF_SIMULATION_MODE`): lokale testdata, geen externe API-calls; providertest in de config/options flow wordt overgeslagen wanneer actief.
+- Testmelding-button (`button.py`: `VunEvTestNotificationButton`) — verstuurt direct een melding, los van cooldown/toggles.
+- `zone_entered`-event nu daadwerkelijk gevuld via een intern bus-signaal (`SIGNAL_ZONE_ENTERED`) tussen `zone_tracking.py` en `event.py`.
+- Repair "notificatiedoel ontbreekt" (`ISSUE_NOTIFICATION_SERVICE_MISSING`), periodiek gecontroleerd door de coordinator.
+- `CoordinatorData.radius_m` toegevoegd zodat de notificatietekst exact dezelfde radius toont als daadwerkelijk gebruikt bij het zoeken.
+- Tests: `test_notifications.py`, `test_zone_tracking.py`.
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Config entries van v0.3.0 blijven werken na terugzetten (nieuwe velden krijgen simpelweg hun default terug via `_get_config_value`-fallback).
+
+## [0.3.0] - 2026-07-10
+
+### Toegevoegd
+- Options flow (`VunEvChargeMonitorOptionsFlow`, `OptionsFlowWithReload`) — alle instelbare velden uit de config flow zijn achteraf wijzigbaar (opdracht §12).
+- Reauth-flow (`async_step_reauth`/`async_step_reauth_confirm`) — wordt automatisch getriggerd via `ConfigEntryAuthFailed` vanuit de coordinator bij HTTP 401/403.
+- Reconfigure-flow (`async_step_reconfigure`) — hergebruikt dezelfde stappen als de initiële config flow.
+- Retries met exponentiële back-off en HTTP 429/`Retry-After`-afhandeling in `api.py` (`ApiClient`).
+- Stale-datadetectie (`coordinator.is_stale`, `binary_sensor.data_stale`) op basis van geconfigureerde maximumleeftijd.
+- Diagnostics (`diagnostics.py`) met volledige redactie van API-keys, zone, gevolgde entiteiten en notificatiedoel.
+- Repairs (`repairs.py`) voor verwijderde zone, verwijderde gevolgde entiteit en langdurig onbereikbare provider.
+- Volledige foutafhandeling in coordinator en config/options flow (invalid_auth, cannot_connect, rate_limited, invalid_zone, invalid_entity, invalid_radius, invalid_interval, invalid_notification_service, unsupported_provider, unknown).
+- Uitgebreide testsuite (config flow, coordinator, diagnostics, providers, API-client, lifecycle).
+
+### Gewijzigd
+- Coordinator behoudt nu expliciet de laatst geldige dataset bij providerfouten (`UpdateFailed`) i.p.v. entities "unavailable" te maken.
+
+### Bekende beperkingen
+- Zie FASE1-ONDERZOEK-EN-ARCHITECTUUR.md §7: authenticatiemodel van de live NDW-API en exacte per-EVSE statusgranulariteit zijn nog niet tegen een echte respons geverifieerd (geen testomgeving met live NDW-toegang beschikbaar in deze fase).
+- Zone-entry-detectie, notificatieverzending en simulatiemodus zijn nog niet geïmplementeerd — gepland voor Fase 4.
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Config entries van v0.3.0 zijn config-entry-`version` 1 — geen migratie uitgevoerd, dus terugzetten naar v0.2.0 vereist geen datamigratie terug.
+
+## [0.2.0] - 2026-07-10
+
+### Toegevoegd
+- Eerste werkende integration: manifest, constants, intern datamodel (`models.py`), providerabstractie (`providers/base.py`), NDW DOT-NL-provider (`providers/ndw.py`), generieke API-client (`api.py`), `DataUpdateCoordinator` (`coordinator.py`).
+- Config flow (`config_flow.py`) volledig via de UI: zone, provider/API-key, gevolgde personen/device trackers, zoekopties, notificatie-instellingen.
+- Basisentiteiten: sensoren (`sensor.py`), binary sensors (`binary_sensor.py`), refresh-button (`button.py`), event-entiteit (`event.py`).
+- Nederlandse en Engelse vertalingen (`strings.json`, `translations/nl.json`, `translations/en.json`).
+- Basistests en basisdocumentatie.
+
+## [0.1.0] - 2026-07-10
+
+### Toegevoegd
+- Fase 1 — Onderzoek en architectuur (`FASE1-ONDERZOEK-EN-ARCHITECTUUR.md`): providerresearch (NDW DOT-NL, TomTom, Open Charge Map, OCPI), beslisbomen, intern datamodel, Home Assistant-architectuurkeuzes, projectstructuur, risico- en impactanalyse. Nog geen integrationcode.

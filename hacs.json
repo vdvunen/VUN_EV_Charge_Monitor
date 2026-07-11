@@ -1,0 +1,5 @@
+{
+  "name": "VUN EV Charge Monitor",
+  "render_readme": true,
+  "homeassistant": "2025.1.0"
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "ID": 12345,
+    "UUID": "abc-123",
+    "AddressInfo": {
+      "Title": "OCM Test Station",
+      "AddressLine1": "Teststraat 9",
+      "Town": "Amsterdam",
+      "Postcode": "1000BB",
+      "Latitude": 52.3705,
+      "Longitude": 4.8955,
+      "Country": { "Title": "Netherlands" }
+    },
+    "OperatorInfo": { "Title": "OCM Operator" },
+    "DateLastStatusUpdate": "2026-07-01T10:00:00+00:00",
+    "Connections": [
+      {
+        "ConnectionType": { "Title": "Type 2" },
+        "PowerKW": 22,
+        "Quantity": 2,
+        "StatusType": { "IsOperational": true }
+      },
+      {
+        "ConnectionType": { "Title": "CCS" },
+        "PowerKW": 50,
+        "Quantity": 1,
+        "StatusType": { "IsOperational": false }
+      }
+    ]
+  },
+  {
+    "ID": null
+  }
+]
