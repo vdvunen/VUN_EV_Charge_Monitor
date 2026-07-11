@@ -9,6 +9,19 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.4.1] - 2026-07-11
+
+### Bugfix
+- **Kaartmarkers (`geo_location.py`)**: de entity-ID van een marker werd door Home Assistant afgeleid van de *actuele* locatienaam op het moment van eerste registratie (bv. `geo_location.laadpaal_totalenergies`) in plaats van de bedoelde vaste slug (`geo_location.laadpaal_map_marker_0`). Oorzaak: de entiteit heeft een dynamische `name`-property (toont de huidige #N-locatienaam) en `_attr_has_entity_name = True`, maar zonder een expliciete `suggested_object_id`-override gebruikt Home Assistant diezelfde dynamische naam óók om de entity-ID te genereren bij de eerste toevoeging — waardoor de entity-ID onvoorspelbaar werd en niet overeenkwam met de gedocumenteerde `map_marker_<index>`-slug. Gevonden n.a.v. een gebruikersmelding: `geo_location.laadpaal_map_marker_0` bleek niet te bestaan ondanks een correct bijgewerkte integratie (v1.4.0), waardoor de kaartkaart leeg bleef.
+- Opgelost door een expliciete `suggested_object_id`-property toe te voegen die altijd `map_marker_<index>` teruggeeft, losgekoppeld van de weergavenaam. Geverifieerd tegen de echte productiecode (`VunEvChargeLocationMarker`) met een gevuld en een leeg slot.
+- Tests: twee nieuwe regressietests in `test_geo_location.py` die bevestigen dat `suggested_object_id` stabiel blijft ongeacht de actuele locatienaam.
+
+### Impact op reeds toegevoegde markers
+Marker-entiteiten die al vóór deze fix zijn aangemaakt (dus met de foute, naam-afgeleide entity-ID) worden **niet automatisch hernoemd** — Home Assistant wijzigt bestaande entity-ID's nooit stilzwijgend. Verwijder de bestaande `geo_location`-markerentiteiten van deze integratie handmatig (**Instellingen → Apparaten & diensten → Entiteiten**, filter op het apparaat, verwijder de marker-entiteiten) en herstart Home Assistant (of herlaad de integratie) zodat ze met de gecorrigeerde, vaste entity-ID's opnieuw worden aangemaakt.
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Geen config-entry-impact. **Let op:** terugzetten naar v1.4.0 of eerder herintroduceert de onvoorspelbare marker-entity-ID-bug.
+
 ## [1.4.0] - 2026-07-11
 
 ### Toegevoegd

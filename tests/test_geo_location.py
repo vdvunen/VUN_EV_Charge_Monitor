@@ -107,3 +107,26 @@ def test_marker_color_updates_with_occupancy(hass) -> None:
     marker = VunEvChargeLocationMarker(coordinator, 0)
 
     assert marker.entity_picture == "/vun_ev_charge_monitor_markers/marker-red.png"
+
+
+def test_suggested_object_id_is_stable_regardless_of_current_location_name(hass) -> None:
+    """Regressietest: entity-ID mag niet afhangen van de actuele locatienaam.
+
+    Zonder de `suggested_object_id`-override leidt HA de entity-ID af van
+    `name` (bv. "TotalEnergies"), wat een onvoorspelbare entity-ID oplevert
+    i.p.v. het bedoelde vaste `map_marker_<index>`-slot.
+    """
+    location = _location("TotalEnergies", available_count=1, total_count=2)
+    coordinator = _FakeCoordinator(hass, [location])
+    marker = VunEvChargeLocationMarker(coordinator, 3)
+
+    assert marker.name == "TotalEnergies"
+    assert marker.suggested_object_id == "map_marker_3"
+
+
+def test_suggested_object_id_stable_when_slot_empty(hass) -> None:
+    coordinator = _FakeCoordinator(hass, [])
+    marker = VunEvChargeLocationMarker(coordinator, 2)
+
+    assert marker.name == "Marker 3"
+    assert marker.suggested_object_id == "map_marker_2"

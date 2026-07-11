@@ -70,6 +70,19 @@ class VunEvChargeLocationMarker(VunEvChargeMonitorEntity, GeolocationEvent):
         self._index = index
 
     @property
+    def suggested_object_id(self) -> str:
+        """Vaste entity-ID-slug, losgekoppeld van de dynamische `name`.
+
+        Zonder deze override leidt Home Assistant de entity-ID af van de
+        actuele (dynamische) locatienaam op het moment van eerste registratie
+        — bv. `geo_location.laadpaal_totalenergies` in plaats van het bedoelde
+        vaste `geo_location.laadpaal_map_marker_0`. Dat druist in tegen het
+        hele "vast slot"-ontwerp van deze entiteit (zie moduledocstring) en
+        gaf gebruikers een onvoorspelbare entity-ID.
+        """
+        return f"map_marker_{self._index}"
+
+    @property
     def _location(self) -> ChargeLocation | None:
         if self.coordinator.data is None:
             return None

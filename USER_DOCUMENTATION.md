@@ -247,6 +247,13 @@ punten te zien:
     - entity: geo_location.laadpaal_map_marker_4
 ```
 
+**Upgrade je van vóór v1.4.1?** Marker-entiteiten die al bestonden vóór deze
+versie hebben mogelijk een andere, onvoorspelbare entity-ID gekregen (een
+bekende bug, zie `CHANGELOG.md`). Verwijder in dat geval de bestaande
+`geo_location`-markerentiteiten via **Instellingen → Apparaten & diensten →
+Entiteiten** en herstart Home Assistant — ze worden dan opnieuw aangemaakt
+met de juiste, vaste `map_marker_<index>`-entity-ID's.
+
 De marker-kleur volgt automatisch de beschikbaarheid van die locatie:
 
 | Kleur | Betekenis |
