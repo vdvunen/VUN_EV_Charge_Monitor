@@ -37,6 +37,9 @@ de buurt.
 - Optioneel: echte rijafstand i.p.v. hemelsbreed voor de topresultaten, via
   een gratis OpenRouteService-key (bring-your-own-key, begrensd tot de
   top-5 kandidaten om het API-verbruik laag te houden).
+- Optioneel: routegebaseerd zoeken — laadpunten langs de route naar een
+  tweede zone i.p.v. rond één vast punt (zelfde OpenRouteService-key,
+  begrensd tot een omsluitende straal van maximaal 20 km).
 - 13 sensoren, 3 binary sensors, 2 buttons en 1 event-entiteit — zie
   `USER_DOCUMENTATION.md` voor het volledige overzicht.
 - Automatische zone-entrydetectie met debounce, cooldown en deduplicatie.
@@ -62,12 +65,15 @@ custom_components/vun_ev_charge_monitor/
 ├── const.py
 ├── coordinator.py          DataUpdateCoordinator
 ├── diagnostics.py
+├── distance.py               optionele rijafstand-verrijking (ORS Matrix)
 ├── entity.py                gedeelde basisentiteit/device
 ├── event.py
+├── geo_location.py            kaartmarker-entiteiten
 ├── manifest.json
 ├── models.py                intern, provideronafhankelijk datamodel
 ├── notifications.py          meldingtekst + verzending
 ├── repairs.py
+├── route.py                   routegebaseerd zoekgebied (ORS Directions)
 ├── sensor.py
 ├── services.py / services.yaml
 ├── strings.json / translations/

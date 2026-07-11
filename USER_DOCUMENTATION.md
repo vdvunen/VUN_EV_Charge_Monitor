@@ -63,6 +63,10 @@ verstuurd.
   wordt alleen toegepast op de eerste paar (top-5) kandidaten na sortering op
   hemelsbrede afstand — niet op de volledige resultatenlijst, om het aantal
   externe aanvragen laag te houden.
+- Bestemmingszone voor routegebaseerd zoeken (optioneel — zie
+  "Routegebaseerd zoeken" hieronder). Vereist dezelfde OpenRouteService-key.
+- Breedte van de routecorridor (hoe ver een laadpunt van de route mag liggen,
+  standaard 1000 meter, instelbaar tussen 100 en 5000 meter).
 
 ### 4. Notificaties
 - Notificatiedoel (een `notify`-entiteit, apparaat, gebied of label).
@@ -188,6 +192,37 @@ OpenRouteService-API-key in (registreren via
 wordt alleen berekend voor de top-kandidaten na de eerste, hemelsbrede
 sortering — niet voor elke gevonden locatie — om het aantal externe
 aanvragen laag te houden.
+
+## Routegebaseerd zoeken
+
+Standaard wordt gezocht rond één vast punt (de zone). Wil je in plaats
+daarvan laadpunten zien **langs de route** naar een tweede zone — bijvoorbeeld
+onderweg naar werk — stel dan bij de zoekopties een "Bestemmingszone route"
+in en vul een gratis OpenRouteService-API-key in (dezelfde key als bij
+"Echte rijafstand gebruiken").
+
+Zodra dit is ingesteld:
+- wordt de routegeometrie tussen de zone en de bestemmingszone opgehaald bij
+  OpenRouteService;
+- worden alleen laadpunten getoond die binnen de ingestelde routecorridor
+  liggen (standaard 1000 meter van de route);
+- is de getoonde afstand de afstand vanaf het startpunt, niet vanaf de
+  routelijn.
+
+**Bekende beperking:** het zoekgebied rond de volledige route wordt begrensd
+tot maximaal 20 km straal. Voor zeer lange routes (bv. honderden kilometers)
+worden dus niet alle laadpunten langs de hele route gevonden — dit is
+voldoende voor de meeste dagelijkse woon-werk-routes, maar geen vervanging
+voor een volledige routeplanner.
+
+**Geen stille terugval:** in tegenstelling tot "Echte rijafstand gebruiken"
+(die bij een fout gewoon de hemelsbrede afstand toont) mislukt de hele update
+expliciet als de route niet berekend kan worden — bijvoorbeeld bij een
+ongeldige bestemmingszone of een probleem bij OpenRouteService. De
+sensor "API-status" en de binary sensor "Data verouderd" laten dit zien.
+
+Laat de bestemmingszone leeg om terug te schakelen naar het normale
+straal-zoekgedrag.
 
 ## Navigatielinks
 

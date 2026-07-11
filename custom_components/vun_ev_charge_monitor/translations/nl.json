@@ -31,7 +31,9 @@
           "max_data_age": "Maximumleeftijd van data",
           "operator_exclude": "Operators uitsluiten (typ een naam en druk op enter)",
           "use_driving_distance": "Echte rijafstand gebruiken voor de topresultaten (vereist een OpenRouteService API-key)",
-          "ors_api_key": "OpenRouteService API-key (alleen nodig als rijafstand aan staat)"
+          "ors_api_key": "OpenRouteService API-key (nodig voor rijafstand en/of routegebaseerd zoeken)",
+          "route_destination_zone": "Bestemmingszone route (optioneel — indien ingesteld wordt gezocht langs de route naar deze zone in plaats van rond een vaste straal)",
+          "route_corridor_m": "Breedte routecorridor (hoe ver een laadpunt van de route mag liggen)"
         }
       },
       "notifications": {
@@ -63,7 +65,7 @@
       "invalid_auth": "De API-key is geweigerd door de provider, of de provider vereist een API-key die niet is opgegeven.",
       "rate_limited": "De provider limiteert het aantal aanvragen. Probeer het later opnieuw.",
       "unsupported_provider": "Deze provider wordt nog niet ondersteund.",
-      "missing_routing_key": "Rijafstand staat aan, maar er is geen OpenRouteService API-key opgegeven.",
+      "missing_routing_key": "Rijafstand of routegebaseerd zoeken staat aan, maar er is geen OpenRouteService API-key opgegeven.",
       "unknown": "Er is een onverwachte fout opgetreden."
     },
     "abort": {
@@ -104,7 +106,9 @@
           "max_data_age": "Maximumleeftijd van data",
           "operator_exclude": "Operators uitsluiten (typ een naam en druk op enter)",
           "use_driving_distance": "Echte rijafstand gebruiken voor de topresultaten (vereist een OpenRouteService API-key)",
-          "ors_api_key": "OpenRouteService API-key (alleen nodig als rijafstand aan staat)"
+          "ors_api_key": "OpenRouteService API-key (nodig voor rijafstand en/of routegebaseerd zoeken)",
+          "route_destination_zone": "Bestemmingszone route (optioneel — indien ingesteld wordt gezocht langs de route naar deze zone in plaats van rond een vaste straal)",
+          "route_corridor_m": "Breedte routecorridor (hoe ver een laadpunt van de route mag liggen)"
         }
       },
       "notifications": {
@@ -129,7 +133,7 @@
       "invalid_auth": "De API-key is geweigerd door de provider, of de provider vereist een API-key die niet is opgegeven.",
       "rate_limited": "De provider limiteert het aantal aanvragen. Probeer het later opnieuw.",
       "unsupported_provider": "Deze provider wordt nog niet ondersteund.",
-      "missing_routing_key": "Rijafstand staat aan, maar er is geen OpenRouteService API-key opgegeven.",
+      "missing_routing_key": "Rijafstand of routegebaseerd zoeken staat aan, maar er is geen OpenRouteService API-key opgegeven.",
       "unknown": "Er is een onverwachte fout opgetreden."
     }
   },

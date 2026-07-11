@@ -9,6 +9,23 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-07-11
+
+### Toegevoegd
+- **Routegebaseerd zoeken** (`route.py`, nieuw): in plaats van rond een vaste straal kan er nu gezocht worden langs een route van de zone naar een tweede zone (`route_destination_zone`, zoekopties-stap). De routegeometrie wordt opgehaald via de OpenRouteService Directions API (`format=geojson`, bring-your-own-key — dezelfde key als de optionele rijafstand-verrijking). Laadlocaties worden vervolgens gefilterd op werkelijke afstand tot de routelijn (`route_corridor_m`, standaard 1000m, instelbaar 100–5000m) i.p.v. op afstand tot één middelpunt.
+- Bestaande providerinterface (`ChargeLocationProvider.async_get_locations`) is ongewijzigd: de omsluitende cirkel (middelpunt + straal) rond de volledige route wordt met de bestaande radius-zoekopdracht bevraagd, waarna de coordinator lokaal filtert op afstand-tot-route. Geen providerwijziging nodig.
+- In routemodus is `distance_m` de afstand vanaf het startpunt (niet vanaf de routelijn) — consistent met de bestaande "hoe ver moet ik nog rijden vanaf hier"-betekenis van dit veld.
+- **Bewust géén stille terugval** bij routefouten (i.t.t. de rijafstand-verrijking): ontbrekende/ongeldige bestemmingszone, ontbrekende OpenRouteService-key, of een mislukte routeaanvraag laten de hele update expliciet mislukken (`UpdateFailed`) — een gewoon straal-resultaat tonen alsof het om een routeresultaat ging zou misleidend zijn.
+- Bekende MVP-beperking: het omsluitende zoekgebied wordt begrensd tot de bestaande maximale straal (20 km) — zeer lange routes worden dus niet in segmenten opgeknipt. Voor de meeste dagelijkse woon-werk-routes is dit voldoende; opgenomen als bekende beperking in de gebruikersdocumentatie.
+- Nieuwe config-flowfout `missing_routing_key` hergebruikt (tekst uitgebreid: dekt nu zowel rijafstand als routegebaseerd zoeken).
+- Tests: `test_route.py` (8 tests: routeparsing, middelpunt/straal-berekening, foutafhandeling, afstand-tot-route), uitbreidingen in `test_coordinator.py` (4 tests: ontbrekende key, ontbrekende bestemmingszone, routefout, corridor-filtering + afstand-herberekening).
+
+### Aanleiding
+Gebruikersverzoek (na eerdere providerlogica-toelichting): laadpunten zoeken langs een route van A naar B in plaats van alleen rond een vast punt, bijvoorbeeld voor het plannen van een laadstop onderweg naar een tweede zone.
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Bestaande config entries blijven werken zonder het nieuwe veld (`route_destination_zone` leeg = ongewijzigd straal-zoekgedrag, geen breaking change).
+
 ## [1.3.0] - 2026-07-11
 
 ### Toegevoegd

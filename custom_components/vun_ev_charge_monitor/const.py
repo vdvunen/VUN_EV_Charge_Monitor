@@ -11,7 +11,7 @@ from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "vun_ev_charge_monitor"
-INTEGRATION_VERSION: Final = "1.3.0"
+INTEGRATION_VERSION: Final = "1.4.0"
 MANUFACTURER: Final = "Vincent van Unen"
 MODEL: Final = "VUN EV Charge Monitor"
 CONFIGURATION_URL: Final = "https://github.com/vdvunen/VUN_EV_Charge_Monitor"
@@ -36,6 +36,8 @@ CONF_SIMULATION_MODE: Final = "simulation_mode"
 CONF_OPERATOR_EXCLUDE: Final = "operator_exclude"
 CONF_USE_DRIVING_DISTANCE: Final = "use_driving_distance"
 CONF_ORS_API_KEY: Final = "ors_api_key"
+CONF_ROUTE_DESTINATION_ZONE: Final = "route_destination_zone"
+CONF_ROUTE_CORRIDOR_M: Final = "route_corridor_m"
 
 # --- Providers ---------------------------------------------------------------
 PROVIDER_NDW: Final = "ndw"
@@ -131,12 +133,19 @@ OCM_TOTAL_TIMEOUT_S: Final = 20
 OCM_MAX_RETRIES: Final = 3
 OCM_BACKOFF_BASE_S: Final = 1.0
 
-# --- OpenRouteService (optionele rijafstand-verrijking) --------------------
-# Bron: geverifieerd tegen giscience.github.io/openrouteservice API-referentie
-# en openrouteservice.org/restrictions (2026-07-11). Matrix-endpoint, POST,
-# header "Authorization: <key>" (geen "Bearer"-prefix), coördinaten als
-# [lon, lat]. Gratis tier: 2.500 requests/dag, 40.000/maand.
+# --- OpenRouteService (optionele rijafstand-verrijking + routezoeken) ------
+# Bron: geverifieerd tegen giscience.github.io/openrouteservice API-referentie,
+# openrouteservice-py.readthedocs.io en openrouteservice.org/restrictions
+# (2026-07-11). Matrix- en Directions-endpoint, beide POST, header
+# "Authorization: <key>" (geen "Bearer"-prefix), coördinaten als [lon, lat].
+# Gratis tier: 2.500 requests/dag, 40.000/maand.
 ORS_MATRIX_URL_TEMPLATE: Final = "https://api.openrouteservice.org/v2/matrix/{profile}"
+# "geojson"-formaat i.p.v. de json-default: levert een gewone GeoJSON
+# LineString ([lon, lat]-coördinaten) i.p.v. Google's encoded polyline —
+# voorkomt dat we zelf een polyline-decoder moeten schrijven.
+ORS_DIRECTIONS_URL_TEMPLATE: Final = (
+    "https://api.openrouteservice.org/v2/directions/{profile}/geojson"
+)
 ORS_PROFILE_DRIVING: Final = "driving-car"
 ORS_CONNECT_TIMEOUT_S: Final = 5
 ORS_TOTAL_TIMEOUT_S: Final = 15
@@ -147,6 +156,17 @@ ORS_BACKOFF_BASE_S: Final = 1.0
 # (opdracht §20, performance-first op Raspberry Pi 4) en blijft ruim binnen
 # de matrix-querylimiet (max. 25 locaties bij "dynamische" argumenten).
 DRIVING_DISTANCE_TOP_N: Final = 5
+
+# --- Routegebaseerd zoeken --------------------------------------------------
+DEFAULT_ROUTE_CORRIDOR_M: Final = 1000
+MIN_ROUTE_CORRIDOR_M: Final = 100
+MAX_ROUTE_CORRIDOR_M: Final = 5000
+# De omsluitende zoekcirkel rond de hele route wordt begrensd tot MAX_RADIUS_M
+# (bestaande grens) — voorkomt een onbegrensd grote provideraanvraag bij een
+# lange route. Bij een lange route worden de verste segmenten dus niet
+# doorzocht; dit is een bewuste, gedocumenteerde grens (geen route-chunking
+# in v1, laagste complexiteit — zie opdracht §6/§20).
+ROUTE_ENCLOSING_RADIUS_CAP_M: Final = MAX_RADIUS_M
 
 # --- Coordinator ------------------------------------------------------------
 UPDATE_FAILURE_STREAK_FOR_REPAIR: Final = 6  # ~6 opeenvolgende mislukkingen

@@ -10,7 +10,7 @@ Alle entities lezen uitsluitend deze gedeelde dataset (opdracht §18).
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
@@ -19,6 +19,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
+from homeassistant.util.location import distance as ha_distance
 
 from .api import ApiClient
 from .const import (
@@ -32,6 +33,8 @@ from .const import (
     CONF_OPERATOR_EXCLUDE,
     CONF_ORS_API_KEY,
     CONF_RADIUS,
+    CONF_ROUTE_CORRIDOR_M,
+    CONF_ROUTE_DESTINATION_ZONE,
     CONF_TRACKED_ENTITIES,
     CONF_UPDATE_INTERVAL,
     CONF_USE_DRIVING_DISTANCE,
@@ -41,6 +44,7 @@ from .const import (
     DEFAULT_MAX_RESULTS,
     DEFAULT_MIN_POWER_KW,
     DEFAULT_RADIUS_M,
+    DEFAULT_ROUTE_CORRIDOR_M,
     DEFAULT_UPDATE_INTERVAL_S,
     DEFAULT_USE_DRIVING_DISTANCE,
     DEFAULT_USE_ZONE_RADIUS,
@@ -54,6 +58,7 @@ from .const import (
     ORS_CONNECT_TIMEOUT_S,
     ORS_MAX_RETRIES,
     ORS_TOTAL_TIMEOUT_S,
+    ROUTE_ENCLOSING_RADIUS_CAP_M,
     UPDATE_FAILURE_STREAK_FOR_REPAIR,
 )
 from .distance import async_enrich_with_driving_distance
@@ -75,6 +80,7 @@ from .repairs import (
     async_create_tracked_entity_removed_issue,
     async_create_zone_removed_issue,
 )
+from .route import Route, RouteError, async_fetch_route, distance_to_route_m
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -197,16 +203,6 @@ class VunEvChargeMonitorCoordinator(DataUpdateCoordinator[CoordinatorData]):
                 f"Zone {zone_entity_id} heeft geen geldige coördinaten"
             ) from err
 
-        use_zone_radius = _get_config_value(
-            self.config_entry, CONF_USE_ZONE_RADIUS, DEFAULT_USE_ZONE_RADIUS
-        )
-        if use_zone_radius:
-            radius_m = float(zone_state.attributes.get("radius", DEFAULT_RADIUS_M))
-        else:
-            radius_m = float(
-                _get_config_value(self.config_entry, CONF_RADIUS, DEFAULT_RADIUS_M)
-            )
-
         max_results = int(
             _get_config_value(self.config_entry, CONF_MAX_RESULTS, DEFAULT_MAX_RESULTS)
         )
@@ -222,11 +218,15 @@ class VunEvChargeMonitorCoordinator(DataUpdateCoordinator[CoordinatorData]):
             _get_config_value(self.config_entry, CONF_MIN_POWER_KW, DEFAULT_MIN_POWER_KW)
         )
 
+        search_lat, search_lon, search_radius_m, route, corridor_m = (
+            await self._async_resolve_search_area(latitude, longitude, zone_state)
+        )
+
         try:
             result = await self.provider.async_get_locations(
-                latitude=latitude,
-                longitude=longitude,
-                radius_m=radius_m,
+                latitude=search_lat,
+                longitude=search_lon,
+                radius_m=search_radius_m,
                 max_results=max_results,
                 connector_types=connector_types,
                 min_power_kw=min_power_kw,
@@ -255,20 +255,28 @@ class VunEvChargeMonitorCoordinator(DataUpdateCoordinator[CoordinatorData]):
         self._check_tracked_entities()
         self._check_notification_target()
 
+        candidate_locations = result.locations
+        if route is not None:
+            candidate_locations = tuple(
+                replace(
+                    loc,
+                    distance_m=ha_distance(latitude, longitude, loc.latitude, loc.longitude),
+                )
+                for loc in candidate_locations
+                if distance_to_route_m(loc.latitude, loc.longitude, route) <= corridor_m
+            )
+
         operator_exclude = {
             operator.strip().lower()
             for operator in _get_config_value(self.config_entry, CONF_OPERATOR_EXCLUDE, [])
             if operator.strip()
         }
-        candidate_locations = (
-            tuple(
+        if operator_exclude:
+            candidate_locations = tuple(
                 loc
-                for loc in result.locations
+                for loc in candidate_locations
                 if not (loc.operator and loc.operator.strip().lower() in operator_exclude)
             )
-            if operator_exclude
-            else result.locations
-        )
 
         sorted_locations = tuple(sorted(candidate_locations, key=_sort_key))
         sorted_locations = await self._async_apply_driving_distance(
@@ -281,8 +289,79 @@ class VunEvChargeMonitorCoordinator(DataUpdateCoordinator[CoordinatorData]):
             fetched_at=result.fetched_at,
             source_name=result.source_name,
             realtime_available=result.realtime_available,
-            radius_m=radius_m,
+            radius_m=corridor_m if route is not None else search_radius_m,
         )
+
+    async def _async_resolve_search_area(
+        self, latitude: float, longitude: float, zone_state
+    ) -> tuple[float, float, float, Route | None, float]:
+        """Bepaal het zoekgebied: normale zone-radius, of routegebaseerd.
+
+        Retourneert (search_lat, search_lon, search_radius_m, route, corridor_m).
+        ``route`` is None en ``corridor_m`` is 0 in de normale (niet-route) modus.
+
+        In tegenstelling tot de driving-distance-verrijking is er hier geen
+        stille terugval: is er een routebestemming geconfigureerd maar
+        mislukt de routeopvraging, dan faalt de hele update expliciet
+        (``UpdateFailed``) — een radius-zoekopdracht tonen alsof het om een
+        route ging zou de gebruiker misleiden.
+        """
+        destination_zone_id = _get_config_value(
+            self.config_entry, CONF_ROUTE_DESTINATION_ZONE, None
+        )
+        if not destination_zone_id:
+            use_zone_radius = _get_config_value(
+                self.config_entry, CONF_USE_ZONE_RADIUS, DEFAULT_USE_ZONE_RADIUS
+            )
+            if use_zone_radius:
+                radius_m = float(zone_state.attributes.get("radius", DEFAULT_RADIUS_M))
+            else:
+                radius_m = float(
+                    _get_config_value(self.config_entry, CONF_RADIUS, DEFAULT_RADIUS_M)
+                )
+            return latitude, longitude, radius_m, None, 0.0
+
+        destination_state = self.hass.states.get(destination_zone_id)
+        if destination_state is None:
+            async_create_zone_removed_issue(self.hass, self.config_entry, destination_zone_id)
+            raise UpdateFailed(f"Routebestemming {destination_zone_id} bestaat niet (meer)")
+        try:
+            dest_lat = float(destination_state.attributes["latitude"])
+            dest_lon = float(destination_state.attributes["longitude"])
+        except (KeyError, TypeError, ValueError) as err:
+            raise UpdateFailed(
+                f"Routebestemming {destination_zone_id} heeft geen geldige coördinaten"
+            ) from err
+
+        ors_api_key = _get_config_value(self.config_entry, CONF_ORS_API_KEY, None)
+        if not ors_api_key:
+            self.last_error_type = ERROR_INVALID_AUTH
+            raise UpdateFailed("Routegebaseerd zoeken vereist een OpenRouteService API-key")
+
+        corridor_m = float(
+            _get_config_value(
+                self.config_entry, CONF_ROUTE_CORRIDOR_M, DEFAULT_ROUTE_CORRIDOR_M
+            )
+        )
+
+        try:
+            route = await async_fetch_route(
+                self._ors_api_client,
+                ors_api_key,
+                origin_lat=latitude,
+                origin_lon=longitude,
+                destination_lat=dest_lat,
+                destination_lon=dest_lon,
+            )
+        except RouteError as err:
+            self.last_error_type = ERROR_CANNOT_CONNECT
+            self._register_failure()
+            raise UpdateFailed(f"Route kon niet berekend worden: {err}") from err
+
+        search_radius_m = min(
+            route.enclosing_radius_m + corridor_m, ROUTE_ENCLOSING_RADIUS_CAP_M
+        )
+        return route.center_latitude, route.center_longitude, search_radius_m, route, corridor_m
 
     async def _async_apply_driving_distance(
         self,

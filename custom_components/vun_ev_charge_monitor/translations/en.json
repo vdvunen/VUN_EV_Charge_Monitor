@@ -31,7 +31,9 @@
           "max_data_age": "Maximum data age",
           "operator_exclude": "Exclude operators (type a name and press enter)",
           "use_driving_distance": "Use real driving distance for the top results (requires an OpenRouteService API key)",
-          "ors_api_key": "OpenRouteService API key (only needed if driving distance is enabled)"
+          "ors_api_key": "OpenRouteService API key (needed for driving distance and/or route-based search)",
+          "route_destination_zone": "Route destination zone (optional — if set, searches along the route to this zone instead of around a fixed radius)",
+          "route_corridor_m": "Route corridor width (how far from the route a charging point may be)"
         }
       },
       "notifications": {
@@ -63,7 +65,7 @@
       "invalid_auth": "The API key was rejected by the provider, or the provider requires an API key that was not provided.",
       "rate_limited": "The provider is rate-limiting requests. Try again later.",
       "unsupported_provider": "This provider is not supported yet.",
-      "missing_routing_key": "Driving distance is enabled but no OpenRouteService API key was provided.",
+      "missing_routing_key": "Driving distance or route-based search is enabled but no OpenRouteService API key was provided.",
       "unknown": "An unexpected error occurred."
     },
     "abort": {
@@ -104,7 +106,9 @@
           "max_data_age": "Maximum data age",
           "operator_exclude": "Exclude operators (type a name and press enter)",
           "use_driving_distance": "Use real driving distance for the top results (requires an OpenRouteService API key)",
-          "ors_api_key": "OpenRouteService API key (only needed if driving distance is enabled)"
+          "ors_api_key": "OpenRouteService API key (needed for driving distance and/or route-based search)",
+          "route_destination_zone": "Route destination zone (optional — if set, searches along the route to this zone instead of around a fixed radius)",
+          "route_corridor_m": "Route corridor width (how far from the route a charging point may be)"
         }
       },
       "notifications": {
@@ -129,7 +133,7 @@
       "invalid_auth": "The API key was rejected by the provider, or the provider requires an API key that was not provided.",
       "rate_limited": "The provider is rate-limiting requests. Try again later.",
       "unsupported_provider": "This provider is not supported yet.",
-      "missing_routing_key": "Driving distance is enabled but no OpenRouteService API key was provided.",
+      "missing_routing_key": "Driving distance or route-based search is enabled but no OpenRouteService API key was provided.",
       "unknown": "An unexpected error occurred."
     }
   },

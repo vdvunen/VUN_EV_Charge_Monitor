@@ -44,3 +44,11 @@ Ook geen nieuwe runtime-dependency. `distance.py` hergebruikt `ApiClient`
 en levert JSON via HTTP, net als de bestaande providers. Optioneel en
 bring-your-own-key — zonder geconfigureerde OpenRouteService-key blijft de
 hemelsbrede (Haversine) afstand de standaard, zonder enige externe call.
+
+## Routegebaseerd zoeken (OpenRouteService)
+
+Eveneens geen nieuwe runtime-dependency. `route.py` hergebruikt dezelfde
+`ApiClient` en dezelfde OpenRouteService-key, maar spreekt de Directions API
+aan (`format=geojson`) i.p.v. de Matrix API. Optioneel en bring-your-own-key
+— zonder geconfigureerde bestemmingszone blijft het bestaande straal-
+zoekgedrag ongewijzigd, zonder enige externe call.

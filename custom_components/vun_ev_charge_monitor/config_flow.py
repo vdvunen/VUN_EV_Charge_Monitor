@@ -40,6 +40,8 @@ from .const import (
     CONF_ORS_API_KEY,
     CONF_PROVIDER,
     CONF_RADIUS,
+    CONF_ROUTE_CORRIDOR_M,
+    CONF_ROUTE_DESTINATION_ZONE,
     CONF_SIMULATION_MODE,
     CONF_TRACKED_ENTITIES,
     CONF_UPDATE_INTERVAL,
@@ -55,6 +57,7 @@ from .const import (
     DEFAULT_NOTIFY_ON_ZONE_ENTRY,
     DEFAULT_PROVIDER,
     DEFAULT_RADIUS_M,
+    DEFAULT_ROUTE_CORRIDOR_M,
     DEFAULT_SIMULATION_MODE,
     DEFAULT_UPDATE_INTERVAL_S,
     DEFAULT_USE_DRIVING_DISTANCE,
@@ -76,11 +79,13 @@ from .const import (
     MAX_MAX_RESULTS,
     MAX_NOTIFICATION_COOLDOWN_MIN,
     MAX_RADIUS_M,
+    MAX_ROUTE_CORRIDOR_M,
     MAX_UPDATE_INTERVAL_S,
     MIN_MAX_DATA_AGE_MIN,
     MIN_MAX_RESULTS,
     MIN_NOTIFICATION_COOLDOWN_MIN,
     MIN_RADIUS_M,
+    MIN_ROUTE_CORRIDOR_M,
     MIN_UPDATE_INTERVAL_S,
     NDW_CONNECT_TIMEOUT_S,
     NDW_TOTAL_TIMEOUT_S,
@@ -246,6 +251,22 @@ def _search_schema(defaults: dict[str, Any]) -> vol.Schema:
             ): selector.TextSelector(
                 selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
             ),
+            vol.Optional(
+                CONF_ROUTE_DESTINATION_ZONE,
+                default=defaults.get(CONF_ROUTE_DESTINATION_ZONE, ""),
+            ): selector.EntitySelector(selector.EntitySelectorConfig(domain="zone")),
+            vol.Required(
+                CONF_ROUTE_CORRIDOR_M,
+                default=defaults.get(CONF_ROUTE_CORRIDOR_M, DEFAULT_ROUTE_CORRIDOR_M),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=MIN_ROUTE_CORRIDOR_M,
+                    max=MAX_ROUTE_CORRIDOR_M,
+                    step=100,
+                    unit_of_measurement="m",
+                    mode=selector.NumberSelectorMode.BOX,
+                )
+            ),
         }
     )
 
@@ -325,13 +346,19 @@ def _validate_tracked_entities(hass: HomeAssistant, entity_ids: list[str]) -> bo
     return True
 
 
-def _validate_search_input(user_input: dict[str, Any]) -> str | None:
+def _validate_search_input(hass: HomeAssistant, user_input: dict[str, Any]) -> str | None:
     """Valideer de zoekopties-stap. Retourneert een foutcode of None bij succes."""
     if not (MIN_RADIUS_M <= user_input[CONF_RADIUS] <= MAX_RADIUS_M):
         return ERROR_INVALID_RADIUS
     if not (MIN_UPDATE_INTERVAL_S <= user_input[CONF_UPDATE_INTERVAL] <= MAX_UPDATE_INTERVAL_S):
         return ERROR_INVALID_INTERVAL
-    if user_input.get(CONF_USE_DRIVING_DISTANCE) and not user_input.get(CONF_ORS_API_KEY):
+    route_destination = user_input.get(CONF_ROUTE_DESTINATION_ZONE)
+    if route_destination:
+        if _validate_zone(hass, route_destination) is None:
+            return ERROR_INVALID_ZONE
+        if not user_input.get(CONF_ORS_API_KEY):
+            return ERROR_MISSING_ROUTING_KEY
+    elif user_input.get(CONF_USE_DRIVING_DISTANCE) and not user_input.get(CONF_ORS_API_KEY):
         return ERROR_MISSING_ROUTING_KEY
     return None
 
@@ -501,7 +528,7 @@ class VunEvChargeMonitorConfigFlow(ConfigFlow, domain=DOMAIN):
         defaults = reconfigure_entry.data if reconfigure_entry else self._data
 
         if user_input is not None:
-            search_error = _validate_search_input(user_input)
+            search_error = _validate_search_input(self.hass, user_input)
             if search_error:
                 errors["base"] = search_error
             else:
@@ -671,7 +698,7 @@ class VunEvChargeMonitorOptionsFlow(OptionsFlowWithReload):
     ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
         if user_input is not None:
-            search_error = _validate_search_input(user_input)
+            search_error = _validate_search_input(self.hass, user_input)
             if search_error:
                 errors["base"] = search_error
             else:

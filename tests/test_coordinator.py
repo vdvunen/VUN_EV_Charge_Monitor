@@ -8,6 +8,7 @@ stale-detectie en repair-issues voor verwijderde entiteiten.
 
 from __future__ import annotations
 
+from dataclasses import replace as dataclass_replace
 from datetime import timedelta
 from unittest.mock import AsyncMock, patch
 
@@ -31,6 +32,7 @@ from custom_components.vun_ev_charge_monitor.providers.base import (
     ChargeLocationProvider,
     ProviderAuthError,
 )
+from custom_components.vun_ev_charge_monitor.route import Route, RouteError
 
 
 def _location(
@@ -113,6 +115,14 @@ def _set_zone(hass, radius: float = 100.0) -> None:
         "zone.woonwijk",
         "zoning",
         {"latitude": 52.37, "longitude": 4.89, "radius": radius, "friendly_name": "Woonwijk"},
+    )
+
+
+def _set_destination_zone(hass, *, lat: float = 52.40, lon: float = 4.95) -> None:
+    hass.states.async_set(
+        "zone.werk",
+        "zoning",
+        {"latitude": lat, "longitude": lon, "radius": 100.0, "friendly_name": "Werk"},
     )
 
 
@@ -222,6 +232,85 @@ async def test_driving_distance_enabled_calls_enrichment_with_top_candidates(has
     _, kwargs = mock_enrich.call_args
     # max_results=2 -> slechts de top 2 kandidaten worden ter verrijking aangeboden.
     assert len(kwargs["locations"]) == 2
+
+
+async def test_route_mode_missing_ors_key_raises_update_failed(hass) -> None:
+    _set_zone(hass)
+    _set_destination_zone(hass)
+    entry = _make_entry(hass, route_destination_zone="zone.werk")
+    coordinator = VunEvChargeMonitorCoordinator(hass, entry, FakeProvider(locations=[]))
+
+    with pytest.raises(UpdateFailed):
+        await coordinator._async_update_data()
+
+
+async def test_route_mode_destination_zone_missing_raises_update_failed(hass) -> None:
+    _set_zone(hass)
+    entry = _make_entry(
+        hass, route_destination_zone="zone.does_not_exist", ors_api_key="test-key"
+    )
+    coordinator = VunEvChargeMonitorCoordinator(hass, entry, FakeProvider(locations=[]))
+
+    with pytest.raises(UpdateFailed):
+        await coordinator._async_update_data()
+
+
+async def test_route_mode_route_error_raises_update_failed(hass) -> None:
+    _set_zone(hass)
+    _set_destination_zone(hass)
+    entry = _make_entry(hass, route_destination_zone="zone.werk", ors_api_key="test-key")
+    coordinator = VunEvChargeMonitorCoordinator(hass, entry, FakeProvider(locations=[]))
+
+    with patch(
+        "custom_components.vun_ev_charge_monitor.coordinator.async_fetch_route",
+        AsyncMock(side_effect=RouteError("boom")),
+    ):
+        with pytest.raises(UpdateFailed):
+            await coordinator._async_update_data()
+    assert coordinator.consecutive_failures == 1
+
+
+async def test_route_mode_filters_by_corridor_and_recomputes_distance(hass) -> None:
+    _set_zone(hass)
+    _set_destination_zone(hass)
+    entry = _make_entry(
+        hass,
+        route_destination_zone="zone.werk",
+        ors_api_key="test-key",
+        route_corridor_m=500,
+        max_results=5,
+    )
+    fake_route = Route(
+        points=((52.37, 4.89), (52.385, 4.92), (52.40, 4.95)),
+        center_latitude=52.385,
+        center_longitude=4.92,
+        enclosing_radius_m=3000.0,
+    )
+    near = dataclass_replace(
+        _location("near", distance_m=999999, available=True),
+        latitude=52.385,
+        longitude=4.9201,  # vlak bij het middelste routepunt
+    )
+    far = dataclass_replace(
+        _location("far", distance_m=1, available=True),
+        latitude=52.50,
+        longitude=5.20,  # ver van de route
+    )
+
+    provider = FakeProvider(locations=[near, far])
+    coordinator = VunEvChargeMonitorCoordinator(hass, entry, provider)
+
+    with patch(
+        "custom_components.vun_ev_charge_monitor.coordinator.async_fetch_route",
+        AsyncMock(return_value=fake_route),
+    ):
+        await coordinator.async_refresh()
+
+    assert coordinator.last_update_success is True
+    ids = [loc.provider_location_id for loc in coordinator.data.locations]
+    assert ids == ["near"]
+    # Afstand in routemodus is de afstand vanaf het startpunt, niet de oorspronkelijke waarde.
+    assert coordinator.data.locations[0].distance_m != 999999
 
 
 async def test_tracked_entity_removed_creates_and_clears_repair_issue(hass) -> None:
