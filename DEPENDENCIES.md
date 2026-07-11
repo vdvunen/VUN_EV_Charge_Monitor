@@ -36,3 +36,11 @@ TomTom en Open Charge Map zijn geïmplementeerd zonder extra runtime-
 dependency, zoals voorzien: beide bronnen leveren JSON via HTTP, verwerkt
 met de standaardbibliotheek en de reeds aanwezige `ApiClient` (`api.py`) en
 gedeelde normalisatiehelpers (`providers/_common.py`).
+
+## Rijafstand-verrijking (OpenRouteService)
+
+Ook geen nieuwe runtime-dependency. `distance.py` hergebruikt `ApiClient`
+(nu uitgebreid met POST-ondersteuning voor de OpenRouteService Matrix API)
+en levert JSON via HTTP, net als de bestaande providers. Optioneel en
+bring-your-own-key — zonder geconfigureerde OpenRouteService-key blijft de
+hemelsbrede (Haversine) afstand de standaard, zonder enige externe call.

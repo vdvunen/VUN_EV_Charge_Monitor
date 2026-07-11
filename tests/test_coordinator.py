@@ -9,6 +9,7 @@ stale-detectie en repair-issues voor verwijderde entiteiten.
 from __future__ import annotations
 
 from datetime import timedelta
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from homeassistant.exceptions import ConfigEntryAuthFailed
@@ -32,7 +33,14 @@ from custom_components.vun_ev_charge_monitor.providers.base import (
 )
 
 
-def _location(location_id: str, *, distance_m: float, available: bool, power_kw: float = 22.0) -> ChargeLocation:
+def _location(
+    location_id: str,
+    *,
+    distance_m: float,
+    available: bool,
+    power_kw: float = 22.0,
+    operator: str = "Operator",
+) -> ChargeLocation:
     status = ChargePointStatus.AVAILABLE if available else ChargePointStatus.OCCUPIED
     return ChargeLocation(
         provider="ndw",
@@ -45,7 +53,7 @@ def _location(location_id: str, *, distance_m: float, available: bool, power_kw:
         postal_code=None,
         city=None,
         country="NL",
-        operator="Operator",
+        operator=operator,
         distance_m=distance_m,
         navigation_url="https://example.invalid",
         evses=(Evse(evse_id=f"{location_id}-1", status=status, connectors=()),),
@@ -159,6 +167,61 @@ async def test_stale_detection(hass) -> None:
     # Simuleer verstreken tijd door fetched_at ver in het verleden te zetten.
     coordinator.data.fetched_at = dt_util.utcnow() - timedelta(minutes=10)
     assert coordinator.is_stale is True
+
+
+async def test_operator_exclude_filters_locations(hass) -> None:
+    _set_zone(hass)
+    entry = _make_entry(hass, operator_exclude=["Bad Operator"])
+    loc_good = _location("good", distance_m=100, available=True)
+    loc_bad = _location("bad", distance_m=50, available=True, operator="Bad Operator")
+    provider = FakeProvider(locations=[loc_good, loc_bad])
+    coordinator = VunEvChargeMonitorCoordinator(hass, entry, provider)
+
+    await coordinator.async_refresh()
+
+    ids = [loc.provider_location_id for loc in coordinator.data.locations]
+    assert ids == ["good"]
+
+
+async def test_driving_distance_disabled_by_default_skips_enrichment(hass) -> None:
+    _set_zone(hass)
+    entry = _make_entry(hass)
+    provider = FakeProvider(locations=[_location("a", distance_m=100, available=True)])
+    coordinator = VunEvChargeMonitorCoordinator(hass, entry, provider)
+
+    with patch(
+        "custom_components.vun_ev_charge_monitor.coordinator.async_enrich_with_driving_distance",
+        AsyncMock(),
+    ) as mock_enrich:
+        await coordinator.async_refresh()
+
+    mock_enrich.assert_not_called()
+
+
+async def test_driving_distance_enabled_calls_enrichment_with_top_candidates(hass) -> None:
+    _set_zone(hass)
+    entry = _make_entry(
+        hass, use_driving_distance=True, ors_api_key="test-key", max_results=2
+    )
+    locations = [
+        _location("a", distance_m=100, available=True),
+        _location("b", distance_m=200, available=True),
+        _location("c", distance_m=300, available=True),
+    ]
+    provider = FakeProvider(locations=locations)
+    coordinator = VunEvChargeMonitorCoordinator(hass, entry, provider)
+
+    enriched_return = tuple(sorted(locations, key=lambda loc: loc.distance_m))[:2]
+    with patch(
+        "custom_components.vun_ev_charge_monitor.coordinator.async_enrich_with_driving_distance",
+        AsyncMock(return_value=enriched_return),
+    ) as mock_enrich:
+        await coordinator.async_refresh()
+
+    mock_enrich.assert_called_once()
+    _, kwargs = mock_enrich.call_args
+    # max_results=2 -> slechts de top 2 kandidaten worden ter verrijking aangeboden.
+    assert len(kwargs["locations"]) == 2
 
 
 async def test_tracked_entity_removed_creates_and_clears_repair_issue(hass) -> None:

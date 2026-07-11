@@ -55,6 +55,14 @@ verstuurd.
 - Minimaal laadvermogen.
 - Update-interval.
 - Maximumleeftijd van data (waarna deze als "verouderd" wordt gemarkeerd).
+- Operators uitsluiten (typ een naam en druk op enter — bv. om een netwerk
+  waar je geen pas voor hebt te negeren; laat leeg om alle operators mee te
+  nemen, dit heeft standaard geen voorkeur voor enig merk).
+- Echte rijafstand gebruiken i.p.v. hemelsbreed (vereist een gratis
+  [OpenRouteService](https://openrouteservice.org/dev/#/signup)-API-key). Dit
+  wordt alleen toegepast op de eerste paar (top-5) kandidaten na sortering op
+  hemelsbrede afstand — niet op de volledige resultatenlijst, om het aantal
+  externe aanvragen laag te houden.
 
 ### 4. Notificaties
 - Notificatiedoel (een `notify`-entiteit, apparaat, gebied of label).
@@ -161,6 +169,25 @@ enthousiast uit de kofferbak haalt.
   huishoudstekker. Leeg = alle typen.
 - **Minimaal vermogen**: verberg locaties onder een ingesteld kW-vermogen.
 - **Zoekradius**: eigen radius, of de radius van de gekozen zone.
+- **Operators uitsluiten**: verberg specifieke laadnetwerken. Zonder deze
+  filter wordt nooit een merk/operator voorgetrokken — de sortering kijkt
+  uitsluitend naar beschikbaarheid, afstand, vermogen en actualiteit.
+
+## Afstand: hemelsbreed of rijafstand
+
+Standaard is de getoonde afstand **hemelsbreed** (rechte lijn) — een bewuste,
+lichte berekening zonder externe routing-dienst. Klik je op de
+navigatielink, dan berekent Google Maps daar een échte rijroute voor, die
+door straten, bochten en eenrichtingsverkeer vrijwel altijd langer is dan de
+hemelsbrede afstand — dat is normaal, geen fout.
+
+Wil je dat de getoonde afstand zelf ook een echte rijafstand is, schakel dan
+"Echte rijafstand gebruiken" in bij de zoekopties en vul een gratis
+OpenRouteService-API-key in (registreren via
+[openrouteservice.org](https://openrouteservice.org/dev/#/signup)). Dit
+wordt alleen berekend voor de top-kandidaten na de eerste, hemelsbrede
+sortering — niet voor elke gevonden locatie — om het aantal externe
+aanvragen laag te houden.
 
 ## Navigatielinks
 

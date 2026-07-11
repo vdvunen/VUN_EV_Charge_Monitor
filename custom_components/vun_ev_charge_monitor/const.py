@@ -11,7 +11,7 @@ from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "vun_ev_charge_monitor"
-INTEGRATION_VERSION: Final = "1.1.0"
+INTEGRATION_VERSION: Final = "1.2.0"
 MANUFACTURER: Final = "Vincent van Unen"
 MODEL: Final = "VUN EV Charge Monitor"
 CONFIGURATION_URL: Final = "https://github.com/vdvunen/VUN_EV_Charge_Monitor"
@@ -33,6 +33,9 @@ CONF_LANGUAGE: Final = "language"
 CONF_NOTIFY_ON_ZONE_ENTRY: Final = "notify_on_zone_entry"
 CONF_NOTIFY_ON_AVAILABILITY_CHANGE: Final = "notify_on_availability_change"
 CONF_SIMULATION_MODE: Final = "simulation_mode"
+CONF_OPERATOR_EXCLUDE: Final = "operator_exclude"
+CONF_USE_DRIVING_DISTANCE: Final = "use_driving_distance"
+CONF_ORS_API_KEY: Final = "ors_api_key"
 
 # --- Providers ---------------------------------------------------------------
 PROVIDER_NDW: Final = "ndw"
@@ -60,6 +63,7 @@ DEFAULT_USE_ZONE_RADIUS: Final = False
 DEFAULT_NOTIFY_ON_ZONE_ENTRY: Final = True
 DEFAULT_NOTIFY_ON_AVAILABILITY_CHANGE: Final = False
 DEFAULT_SIMULATION_MODE: Final = False
+DEFAULT_USE_DRIVING_DISTANCE: Final = False
 
 # --- Grenzen (configuratievalidatie) --------------------------------------
 MIN_RADIUS_M: Final = 100
@@ -85,6 +89,7 @@ ERROR_CANNOT_CONNECT: Final = "cannot_connect"
 ERROR_INVALID_AUTH: Final = "invalid_auth"
 ERROR_RATE_LIMITED: Final = "rate_limited"
 ERROR_UNSUPPORTED_PROVIDER: Final = "unsupported_provider"
+ERROR_MISSING_ROUTING_KEY: Final = "missing_routing_key"
 ERROR_UNKNOWN: Final = "unknown"
 # Geen aparte ERROR_NO_REALTIME_AVAILABILITY: Open Charge Map is bewust en
 # permanent static-only (opdracht §7.3) — dat is normaal, verwacht gedrag
@@ -125,6 +130,23 @@ OCM_CONNECT_TIMEOUT_S: Final = 5
 OCM_TOTAL_TIMEOUT_S: Final = 20
 OCM_MAX_RETRIES: Final = 3
 OCM_BACKOFF_BASE_S: Final = 1.0
+
+# --- OpenRouteService (optionele rijafstand-verrijking) --------------------
+# Bron: geverifieerd tegen giscience.github.io/openrouteservice API-referentie
+# en openrouteservice.org/restrictions (2026-07-11). Matrix-endpoint, POST,
+# header "Authorization: <key>" (geen "Bearer"-prefix), coördinaten als
+# [lon, lat]. Gratis tier: 2.500 requests/dag, 40.000/maand.
+ORS_MATRIX_URL_TEMPLATE: Final = "https://api.openrouteservice.org/v2/matrix/{profile}"
+ORS_PROFILE_DRIVING: Final = "driving-car"
+ORS_CONNECT_TIMEOUT_S: Final = 5
+ORS_TOTAL_TIMEOUT_S: Final = 15
+ORS_MAX_RETRIES: Final = 2
+ORS_BACKOFF_BASE_S: Final = 1.0
+# Alleen de top-N (op hemelsbrede afstand gesorteerde) kandidaten krijgen een
+# echte rijafstand-opvraging — voorkomt onnodig veel API-calls per update
+# (opdracht §20, performance-first op Raspberry Pi 4) en blijft ruim binnen
+# de matrix-querylimiet (max. 25 locaties bij "dynamische" argumenten).
+DRIVING_DISTANCE_TOP_N: Final = 5
 
 # --- Coordinator ------------------------------------------------------------
 UPDATE_FAILURE_STREAK_FOR_REPAIR: Final = 6  # ~6 opeenvolgende mislukkingen

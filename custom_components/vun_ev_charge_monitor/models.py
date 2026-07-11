@@ -127,6 +127,9 @@ class ChargeLocation:
     last_successful_update: datetime | None
     source_quality: DataQuality
     confidence_score: float | None = None
+    distance_is_driving: bool = False
+    """True wanneer ``distance_m`` een echte rijafstand is (OpenRouteService),
+    False wanneer het de standaard hemelsbrede (Haversine) afstand betreft."""
 
     @property
     def total_evses(self) -> int:

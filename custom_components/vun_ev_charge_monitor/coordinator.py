@@ -16,9 +16,11 @@ from datetime import datetime, timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
+from .api import ApiClient
 from .const import (
     CONF_CONNECTOR_TYPES,
     CONF_MAX_DATA_AGE,
@@ -27,9 +29,12 @@ from .const import (
     CONF_NOTIFICATION_TARGET,
     CONF_NOTIFY_ON_AVAILABILITY_CHANGE,
     CONF_NOTIFY_ON_ZONE_ENTRY,
+    CONF_OPERATOR_EXCLUDE,
+    CONF_ORS_API_KEY,
     CONF_RADIUS,
     CONF_TRACKED_ENTITIES,
     CONF_UPDATE_INTERVAL,
+    CONF_USE_DRIVING_DISTANCE,
     CONF_USE_ZONE_RADIUS,
     CONF_ZONE,
     DEFAULT_MAX_DATA_AGE_MIN,
@@ -37,14 +42,21 @@ from .const import (
     DEFAULT_MIN_POWER_KW,
     DEFAULT_RADIUS_M,
     DEFAULT_UPDATE_INTERVAL_S,
+    DEFAULT_USE_DRIVING_DISTANCE,
     DEFAULT_USE_ZONE_RADIUS,
     DOMAIN,
+    DRIVING_DISTANCE_TOP_N,
     ERROR_CANNOT_CONNECT,
     ERROR_INVALID_AUTH,
     ERROR_RATE_LIMITED,
     ERROR_UNKNOWN,
+    ORS_BACKOFF_BASE_S,
+    ORS_CONNECT_TIMEOUT_S,
+    ORS_MAX_RETRIES,
+    ORS_TOTAL_TIMEOUT_S,
     UPDATE_FAILURE_STREAK_FOR_REPAIR,
 )
+from .distance import async_enrich_with_driving_distance
 from .models import ChargeLocation, ConnectorType
 from .providers.base import (
     ChargeLocationProvider,
@@ -145,6 +157,13 @@ class VunEvChargeMonitorCoordinator(DataUpdateCoordinator[CoordinatorData]):
         self.consecutive_failures = 0
         self.last_error_type: str | None = None
         self.last_attempt: datetime | None = None
+        self._ors_api_client = ApiClient(
+            async_get_clientsession(hass),
+            connect_timeout_s=ORS_CONNECT_TIMEOUT_S,
+            total_timeout_s=ORS_TOTAL_TIMEOUT_S,
+            max_retries=ORS_MAX_RETRIES,
+            backoff_base_s=ORS_BACKOFF_BASE_S,
+        )
 
     @property
     def max_data_age(self) -> timedelta:
@@ -236,7 +255,26 @@ class VunEvChargeMonitorCoordinator(DataUpdateCoordinator[CoordinatorData]):
         self._check_tracked_entities()
         self._check_notification_target()
 
-        sorted_locations = tuple(sorted(result.locations, key=_sort_key))[:max_results]
+        operator_exclude = {
+            operator.strip().lower()
+            for operator in _get_config_value(self.config_entry, CONF_OPERATOR_EXCLUDE, [])
+            if operator.strip()
+        }
+        candidate_locations = (
+            tuple(
+                loc
+                for loc in result.locations
+                if not (loc.operator and loc.operator.strip().lower() in operator_exclude)
+            )
+            if operator_exclude
+            else result.locations
+        )
+
+        sorted_locations = tuple(sorted(candidate_locations, key=_sort_key))
+        sorted_locations = await self._async_apply_driving_distance(
+            sorted_locations, latitude, longitude, max_results
+        )
+        sorted_locations = sorted_locations[:max_results]
 
         return CoordinatorData(
             locations=sorted_locations,
@@ -245,6 +283,39 @@ class VunEvChargeMonitorCoordinator(DataUpdateCoordinator[CoordinatorData]):
             realtime_available=result.realtime_available,
             radius_m=radius_m,
         )
+
+    async def _async_apply_driving_distance(
+        self,
+        sorted_locations: tuple[ChargeLocation, ...],
+        latitude: float,
+        longitude: float,
+        max_results: int,
+    ) -> tuple[ChargeLocation, ...]:
+        """Verrijk de top-kandidaten met echte rijafstand (opt-in, OpenRouteService).
+
+        Alleen de eerste ``min(DRIVING_DISTANCE_TOP_N, max_results)`` reeds op
+        hemelsbrede afstand gesorteerde locaties krijgen een routeopvraging —
+        dit begrenst het aantal externe calls per update (opdracht §20).
+        """
+        use_driving_distance = _get_config_value(
+            self.config_entry, CONF_USE_DRIVING_DISTANCE, DEFAULT_USE_DRIVING_DISTANCE
+        )
+        ors_api_key = _get_config_value(self.config_entry, CONF_ORS_API_KEY, None)
+        if not use_driving_distance or not ors_api_key or not sorted_locations:
+            return sorted_locations
+
+        enrich_count = min(DRIVING_DISTANCE_TOP_N, max_results, len(sorted_locations))
+        top_candidates = sorted_locations[:enrich_count]
+        remainder = sorted_locations[enrich_count:]
+
+        enriched = await async_enrich_with_driving_distance(
+            self._ors_api_client,
+            ors_api_key,
+            origin_lat=latitude,
+            origin_lon=longitude,
+            locations=top_candidates,
+        )
+        return tuple(sorted(enriched, key=_sort_key)) + remainder
 
     def _register_failure(self) -> None:
         self.consecutive_failures += 1

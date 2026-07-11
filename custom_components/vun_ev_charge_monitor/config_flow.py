@@ -36,11 +36,14 @@ from .const import (
     CONF_NOTIFICATION_TARGET,
     CONF_NOTIFY_ON_AVAILABILITY_CHANGE,
     CONF_NOTIFY_ON_ZONE_ENTRY,
+    CONF_OPERATOR_EXCLUDE,
+    CONF_ORS_API_KEY,
     CONF_PROVIDER,
     CONF_RADIUS,
     CONF_SIMULATION_MODE,
     CONF_TRACKED_ENTITIES,
     CONF_UPDATE_INTERVAL,
+    CONF_USE_DRIVING_DISTANCE,
     CONF_USE_ZONE_RADIUS,
     CONF_ZONE,
     DEFAULT_LANGUAGE,
@@ -54,6 +57,7 @@ from .const import (
     DEFAULT_RADIUS_M,
     DEFAULT_SIMULATION_MODE,
     DEFAULT_UPDATE_INTERVAL_S,
+    DEFAULT_USE_DRIVING_DISTANCE,
     DEFAULT_USE_ZONE_RADIUS,
     DOMAIN,
     ERROR_CANNOT_CONNECT,
@@ -63,6 +67,7 @@ from .const import (
     ERROR_INVALID_NOTIFICATION_SERVICE,
     ERROR_INVALID_RADIUS,
     ERROR_INVALID_ZONE,
+    ERROR_MISSING_ROUTING_KEY,
     ERROR_RATE_LIMITED,
     ERROR_UNKNOWN,
     ERROR_UNSUPPORTED_PROVIDER,
@@ -225,6 +230,22 @@ def _search_schema(defaults: dict[str, Any]) -> vol.Schema:
                     mode=selector.NumberSelectorMode.BOX,
                 )
             ),
+            vol.Optional(
+                CONF_OPERATOR_EXCLUDE, default=defaults.get(CONF_OPERATOR_EXCLUDE, [])
+            ): selector.TextSelector(
+                selector.TextSelectorConfig(multiple=True)
+            ),
+            vol.Required(
+                CONF_USE_DRIVING_DISTANCE,
+                default=defaults.get(
+                    CONF_USE_DRIVING_DISTANCE, DEFAULT_USE_DRIVING_DISTANCE
+                ),
+            ): selector.BooleanSelector(),
+            vol.Optional(
+                CONF_ORS_API_KEY, default=defaults.get(CONF_ORS_API_KEY, "")
+            ): selector.TextSelector(
+                selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
+            ),
         }
     )
 
@@ -302,6 +323,17 @@ def _validate_tracked_entities(hass: HomeAssistant, entity_ids: list[str]) -> bo
         if hass.states.get(entity_id) is None:
             return False
     return True
+
+
+def _validate_search_input(user_input: dict[str, Any]) -> str | None:
+    """Valideer de zoekopties-stap. Retourneert een foutcode of None bij succes."""
+    if not (MIN_RADIUS_M <= user_input[CONF_RADIUS] <= MAX_RADIUS_M):
+        return ERROR_INVALID_RADIUS
+    if not (MIN_UPDATE_INTERVAL_S <= user_input[CONF_UPDATE_INTERVAL] <= MAX_UPDATE_INTERVAL_S):
+        return ERROR_INVALID_INTERVAL
+    if user_input.get(CONF_USE_DRIVING_DISTANCE) and not user_input.get(CONF_ORS_API_KEY):
+        return ERROR_MISSING_ROUTING_KEY
+    return None
 
 
 def _validate_notification_target(hass: HomeAssistant, target: dict[str, Any]) -> bool:
@@ -469,14 +501,9 @@ class VunEvChargeMonitorConfigFlow(ConfigFlow, domain=DOMAIN):
         defaults = reconfigure_entry.data if reconfigure_entry else self._data
 
         if user_input is not None:
-            if not (MIN_RADIUS_M <= user_input[CONF_RADIUS] <= MAX_RADIUS_M):
-                errors["base"] = ERROR_INVALID_RADIUS
-            elif not (
-                MIN_UPDATE_INTERVAL_S
-                <= user_input[CONF_UPDATE_INTERVAL]
-                <= MAX_UPDATE_INTERVAL_S
-            ):
-                errors["base"] = ERROR_INVALID_INTERVAL
+            search_error = _validate_search_input(user_input)
+            if search_error:
+                errors["base"] = search_error
             else:
                 self._data.update(user_input)
                 return await self.async_step_notifications()
@@ -644,14 +671,9 @@ class VunEvChargeMonitorOptionsFlow(OptionsFlowWithReload):
     ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
         if user_input is not None:
-            if not (MIN_RADIUS_M <= user_input[CONF_RADIUS] <= MAX_RADIUS_M):
-                errors["base"] = ERROR_INVALID_RADIUS
-            elif not (
-                MIN_UPDATE_INTERVAL_S
-                <= user_input[CONF_UPDATE_INTERVAL]
-                <= MAX_UPDATE_INTERVAL_S
-            ):
-                errors["base"] = ERROR_INVALID_INTERVAL
+            search_error = _validate_search_input(user_input)
+            if search_error:
+                errors["base"] = search_error
             else:
                 self._data.update(user_input)
                 return await self.async_step_notifications()

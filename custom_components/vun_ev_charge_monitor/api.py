@@ -3,9 +3,9 @@ Website: https://www.unen.nl
 Email: code@unen.nl
 
 Generieke async API-client met timeouts, retries, exponential back-off en
-HTTP 429/Retry-After-afhandeling. Providerneutraal — providers/*.py bouwen
-hierop verder en zijn zelf verantwoordelijk voor normalisatie naar het
-interne datamodel.
+HTTP 429/Retry-After-afhandeling. Providerneutraal — providers/*.py en
+distance.py bouwen hierop verder en zijn zelf verantwoordelijk voor
+normalisatie naar het interne datamodel.
 """
 
 from __future__ import annotations
@@ -84,7 +84,29 @@ class ApiClient:
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
     ) -> Any:
-        """Voer een GET-request uit en retourneer de gedecodeerde JSON-body.
+        """Voer een GET-request uit en retourneer de gedecodeerde JSON-body."""
+        return await self._async_request_json("GET", url, params=params, headers=headers)
+
+    async def async_post_json(
+        self,
+        url: str,
+        *,
+        json_body: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
+        """Voer een POST-request uit met een JSON-body en retourneer de gedecodeerde respons."""
+        return await self._async_request_json("POST", url, json_body=json_body, headers=headers)
+
+    async def _async_request_json(
+        self,
+        method: str,
+        url: str,
+        *,
+        params: dict[str, Any] | None = None,
+        json_body: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
+        """Voer een request uit en retourneer de gedecodeerde JSON-body.
 
         Retryt op timeouts, connectiefouten en HTTP 5xx met exponentiële
         back-off (begrensd tot ``max_retries`` pogingen). HTTP 429 wordt
@@ -98,8 +120,13 @@ class ApiClient:
         for attempt in range(self._max_retries + 1):
             self.retry_count = attempt
             try:
-                async with self._session.get(
-                    url, params=params, headers=headers, timeout=self._timeout
+                async with self._session.request(
+                    method,
+                    url,
+                    params=params,
+                    json=json_body,
+                    headers=headers,
+                    timeout=self._timeout,
                 ) as response:
                     if response.status == 401 or response.status == 403:
                         raise ApiAuthError(

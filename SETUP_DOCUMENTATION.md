@@ -53,6 +53,7 @@ providercall per config entry per update-interval.
 | NDW DOT-NL | Nee (bulk/bbox-toegang is publiek) | — |
 | TomTom | Ja | https://developer.tomtom.com — maak een app aan, kopieer de API-key |
 | Open Charge Map | Ja (gratis) | https://openchargemap.org — Sign in → My Apps → Register An Application |
+| OpenRouteService (optioneel, alleen voor rijafstand) | Ja (gratis, 2.500 requests/dag) | https://openrouteservice.org/dev/#/signup |
 
 API-keys worden uitsluitend opgeslagen in de config entry (versleuteld door
 Home Assistant's eigen opslag), nooit in platte tekst in logs of

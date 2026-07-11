@@ -43,9 +43,11 @@ class FakeSession:
     def __init__(self, responses: list) -> None:
         self._responses = list(responses)
         self.call_count = 0
+        self.last_method: str | None = None
 
-    def get(self, url, params=None, headers=None, timeout=None):
+    def request(self, method, url, params=None, json=None, headers=None, timeout=None):
         self.call_count += 1
+        self.last_method = method
         item = self._responses.pop(0)
         if isinstance(item, Exception):
             raise item
@@ -141,3 +143,26 @@ async def test_unexpected_client_error_status_raises_response_error() -> None:
         await client.async_get_json("https://example.invalid")
 
     assert session.call_count == 1
+
+
+async def test_post_json_uses_post_method_and_returns_json() -> None:
+    session = FakeSession([FakeResponse(200, {"distances": [[100.0, 200.0]]})])
+    client = ApiClient(session, max_retries=2, backoff_base_s=0)
+
+    result = await client.async_post_json(
+        "https://example.invalid", json_body={"locations": [[1, 2]]}
+    )
+
+    assert result == {"distances": [[100.0, 200.0]]}
+    assert session.last_method == "POST"
+    assert session.call_count == 1
+
+
+async def test_post_json_retries_on_server_error() -> None:
+    session = FakeSession([FakeResponse(503), FakeResponse(200, {"ok": True})])
+    client = ApiClient(session, max_retries=2, backoff_base_s=0)
+
+    result = await client.async_post_json("https://example.invalid", json_body={})
+
+    assert result == {"ok": True}
+    assert session.call_count == 2

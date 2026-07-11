@@ -9,6 +9,22 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-07-11
+
+### Toegevoegd
+- **Operator-uitsluitfilter** (`operator_exclude`, zoekopties-stap): sluit specifieke laadnetwerken uit. De sortering had al nooit een merkvoorkeur (beschikbaarheid → afstand → vermogen → actualiteit, operator-onafhankelijk); dit maakt het expliciet configureerbaar in plaats van impliciet gedrag.
+- **Optionele rijafstand i.p.v. hemelsbreed** (`use_driving_distance` + `ors_api_key`, zoekopties-stap): nieuwe module `distance.py` haalt echte rijafstand op via de OpenRouteService Matrix API (bring-your-own-key, gratis tier 2.500 requests/dag). Om het API-verbruik laag te houden (opdracht §20, Raspberry Pi 4) wordt dit alleen toegepast op de top-`DRIVING_DISTANCE_TOP_N` (5) kandidaten ná sortering op hemelsbrede afstand, met een re-sortering van uitsluitend die subset op de echte afstand. Faalt nooit hard — elke fout (auth/rate-limit/netwerk/malformed) valt automatisch terug op de ongewijzigde hemelsbrede afstand.
+- `ChargeLocation.distance_is_driving`-veld om te onderscheiden of `distance_m` een rijafstand of een hemelsbrede afstand is.
+- `ApiClient.async_post_json()` — de HTTP-client ondersteunde tot nu toe alleen GET; de OpenRouteService Matrix API vereist een POST met JSON-body. Retry/back-off/foutafhandeling is gedeeld met de bestaande GET-implementatie (`_async_request_json`).
+- Nieuwe config-flowfout `missing_routing_key`: rijafstand aanzetten zonder OpenRouteService-key wordt geblokkeerd vóór opslag.
+- Tests: `test_distance.py` (10 tests, volledig geverifieerd), uitbreidingen in `test_api.py` (POST-ondersteuning) en `test_coordinator.py` (operator-filter, driving-distance-wiring).
+
+### Aanleiding
+Rechtstreeks n.a.v. gebruikersfeedback tijdens live-gebruik: de "beste laadlocatie" bleek een specifieke operator te tonen zonder dat duidelijk was dat de keuze al merk-onafhankelijk was, en de getoonde afstand (bewust hemelsbreed, zie Fase 1-architectuurkeuze) werd verward met de langere routeafstand die Google Maps na het klikken op de navigatielink berekent.
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Bestaande config entries blijven werken zonder de nieuwe velden (vallen terug op hun defaults: geen operator-uitsluiting, hemelsbrede afstand).
+
 ## [1.1.0] - 2026-07-11
 
 ### Toegevoegd

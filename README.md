@@ -31,8 +31,12 @@ de buurt.
 - Drie providers: **NDW DOT-NL** (primair, gratis, Nederland),
   **TomTom** (bring-your-own-key, per-aansluiting-status) en
   **Open Charge Map** (bring-your-own-key, statische fallback).
-- Filtert op connectortype en minimaal laadvermogen; sorteert op
-  beschikbaarheid, afstand, vermogen en actualiteit.
+- Filtert op connectortype, minimaal laadvermogen en (optioneel) uitgesloten
+  operators; sorteert op beschikbaarheid, afstand, vermogen en actualiteit —
+  zonder ingebouwde merkvoorkeur.
+- Optioneel: echte rijafstand i.p.v. hemelsbreed voor de topresultaten, via
+  een gratis OpenRouteService-key (bring-your-own-key, begrensd tot de
+  top-5 kandidaten om het API-verbruik laag te houden).
 - 13 sensoren, 3 binary sensors, 2 buttons en 1 event-entiteit — zie
   `USER_DOCUMENTATION.md` voor het volledige overzicht.
 - Automatische zone-entrydetectie met debounce, cooldown en deduplicatie.
