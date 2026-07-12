@@ -248,7 +248,7 @@ async def test_unavailable_state_never_triggers_entry(hass) -> None:
     tracker.async_unload()
 
 
-def test_async_unload_removes_listeners(hass) -> None:
+async def test_async_unload_removes_listeners(hass) -> None:
     _set_zone(hass)
     hass.states.async_set("person.vincent", "not_home")
     entry = _make_entry(hass)

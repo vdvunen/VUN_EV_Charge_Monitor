@@ -122,10 +122,10 @@ def test_suggested_object_id_is_stable_regardless_of_current_location_name(hass)
     """
     location = _location("TotalEnergies", available_count=1, total_count=2)
     coordinator = _FakeCoordinator(hass, [location])
-    marker = VunEvChargeLocationMarker(coordinator, 3)
+    marker = VunEvChargeLocationMarker(coordinator, 0)
 
     assert marker.name == "TotalEnergies"
-    assert marker.suggested_object_id == "map_marker_3"
+    assert marker.suggested_object_id == "map_marker_0"
 
 
 def test_suggested_object_id_stable_when_slot_empty(hass) -> None:

@@ -49,7 +49,9 @@ async def test_setup_entry_creates_entities(hass, mock_config_entry_data) -> Non
 
     assert entry.state is ConfigEntryState.LOADED
     entities = er.async_entries_for_config_entry(er.async_get(hass), entry.entry_id)
-    assert len(entities) == 19  # 13 sensors + 3 binary_sensors + 2 buttons + 1 event
+    # 13 sensors + 3 binary_sensors + 2 buttons + 1 event + 5 geo_location map markers
+    # (default max_results, zie DEFAULT_MAX_RESULTS in const.py).
+    assert len(entities) == 24
     assert entry.runtime_data.coordinator.data is not None
 
 

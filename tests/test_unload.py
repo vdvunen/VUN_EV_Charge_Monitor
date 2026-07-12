@@ -51,6 +51,9 @@ async def test_unload_entry_removes_entities_and_stops_coordinator(
 
         assert await hass.config_entries.async_unload(entry.entry_id)
         await hass.async_block_till_done()
+        # Entiteitverwijdering (o.a. CoordinatorEntity-cleanup) kan een extra
+        # taak inplannen die pas na een tweede block_till_done() is afgerond.
+        await hass.async_block_till_done()
 
     assert entry.state is ConfigEntryState.NOT_LOADED
     entities = er.async_entries_for_config_entry(er.async_get(hass), entry.entry_id)

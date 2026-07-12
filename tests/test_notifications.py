@@ -9,10 +9,11 @@ het daadwerkelijk versturen via `notify.send_message`.
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
-
 from homeassistant.util import dt as dt_util
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
+    async_mock_service,
+)
 
 from custom_components.vun_ev_charge_monitor.const import DOMAIN
 from custom_components.vun_ev_charge_monitor.coordinator import CoordinatorData
@@ -164,24 +165,21 @@ async def test_send_notification_calls_notify_service(hass, mock_config_entry_da
 
     coordinator_data = _coordinator_data([_location("P+R Centrum", available=True, distance_m=280)])
 
-    with patch.object(hass.services, "async_call", AsyncMock()) as mock_call:
-        await async_send_charge_notification(
-            hass, entry, coordinator_data, language="nl", max_results=5
-        )
+    calls = async_mock_service(hass, "notify", "send_message")
+    await async_send_charge_notification(
+        hass, entry, coordinator_data, language="nl", max_results=5
+    )
 
-    mock_call.assert_called_once()
-    args, kwargs = mock_call.call_args
-    assert args[0] == "notify"
-    assert args[1] == "send_message"
-    assert "P+R Centrum" in args[2]["message"]
-    assert kwargs["target"] == {"entity_id": ["notify.mobile_app_test"]}
+    assert len(calls) == 1
+    assert "P+R Centrum" in calls[0].data["message"]
+    assert calls[0].data["entity_id"] == ["notify.mobile_app_test"]
 
 
 async def test_send_notification_skips_without_target(hass, mock_config_entry_data) -> None:
     entry = MockConfigEntry(domain=DOMAIN, unique_id="zone.woonwijk", data=mock_config_entry_data)
     entry.add_to_hass(hass)
 
-    with patch.object(hass.services, "async_call", AsyncMock()) as mock_call:
-        await async_send_charge_notification(hass, entry, None, language="nl", max_results=5)
+    calls = async_mock_service(hass, "notify", "send_message")
+    await async_send_charge_notification(hass, entry, None, language="nl", max_results=5)
 
-    mock_call.assert_not_called()
+    assert calls == []
