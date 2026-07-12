@@ -214,19 +214,19 @@
   "issues": {
     "zone_removed": {
       "title": "Zone no longer exists",
-      "description": "The zone used by '{entry_title}' ({zone}) no longer exists. Recreate the zone or reconfigure the integration to select a different zone."
+      "description": "The zone used by {entry_title} ({zone}) no longer exists. Recreate the zone or reconfigure the integration to select a different zone."
     },
     "tracked_entity_removed": {
       "title": "Tracked entity no longer exists",
-      "description": "The tracked entity {entity_id} used by '{entry_title}' no longer exists. Reconfigure the integration to update the selected persons/device trackers."
+      "description": "The tracked entity {entity_id} used by {entry_title} no longer exists. Reconfigure the integration to update the selected persons/device trackers."
     },
     "provider_unavailable": {
       "title": "Provider unavailable",
-      "description": "'{entry_title}' has not been able to reach its data provider for several consecutive attempts. Check your network connection and, if applicable, your API key."
+      "description": "{entry_title} has not been able to reach its data provider for several consecutive attempts. Check your network connection and, if applicable, your API key."
     },
     "notification_service_missing": {
       "title": "Notification target missing",
-      "description": "'{entry_title}' has notifications enabled, but no valid notification target is configured. Open the integration's options to select a notification target."
+      "description": "{entry_title} has notifications enabled, but no valid notification target is configured. Open the integration's options to select a notification target."
     }
   },
   "services": {

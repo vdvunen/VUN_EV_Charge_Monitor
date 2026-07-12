@@ -3,10 +3,11 @@
   "name": "VUN EV Charge Monitor",
   "codeowners": ["@vdvunen"],
   "config_flow": true,
+  "dependencies": ["http"],
   "documentation": "https://github.com/vdvunen/VUN_EV_Charge_Monitor",
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/vdvunen/VUN_EV_Charge_Monitor/issues",
   "requirements": [],
-  "version": "1.4.3"
+  "version": "1.4.4"
 }

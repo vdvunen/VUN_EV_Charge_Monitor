@@ -214,19 +214,19 @@
   "issues": {
     "zone_removed": {
       "title": "Zone bestaat niet meer",
-      "description": "De zone die '{entry_title}' gebruikt ({zone}) bestaat niet meer. Maak de zone opnieuw aan of herconfigureer de integratie om een andere zone te kiezen."
+      "description": "De zone die {entry_title} gebruikt ({zone}) bestaat niet meer. Maak de zone opnieuw aan of herconfigureer de integratie om een andere zone te kiezen."
     },
     "tracked_entity_removed": {
       "title": "Gevolgde entiteit bestaat niet meer",
-      "description": "De gevolgde entiteit {entity_id} van '{entry_title}' bestaat niet meer. Herconfigureer de integratie om de geselecteerde personen/device trackers bij te werken."
+      "description": "De gevolgde entiteit {entity_id} van {entry_title} bestaat niet meer. Herconfigureer de integratie om de geselecteerde personen/device trackers bij te werken."
     },
     "provider_unavailable": {
       "title": "Provider onbereikbaar",
-      "description": "'{entry_title}' kan de databron al meerdere pogingen achtereen niet bereiken. Controleer de netwerkverbinding en eventueel de API-key."
+      "description": "{entry_title} kan de databron al meerdere pogingen achtereen niet bereiken. Controleer de netwerkverbinding en eventueel de API-key."
     },
     "notification_service_missing": {
       "title": "Notificatiedoel ontbreekt",
-      "description": "'{entry_title}' heeft meldingen ingeschakeld, maar er is geen geldig notificatiedoel geconfigureerd. Open de opties van de integratie om een notificatiedoel te selecteren."
+      "description": "{entry_title} heeft meldingen ingeschakeld, maar er is geen geldig notificatiedoel geconfigureerd. Open de opties van de integratie om een notificatiedoel te selecteren."
     }
   },
   "services": {

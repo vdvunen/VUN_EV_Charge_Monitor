@@ -9,6 +9,20 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.4.4] - 2026-07-12
+
+### Bugfix (gevonden door de eerste CI-run, v1.4.3)
+- **`manifest.json`**: `hassfest` signaleerde dat de integratie `hass.http.async_register_static_paths` gebruikt (voor de kaartmarker-afbeeldingen, zie `__init__.py`) zonder de `http`-component als afhankelijkheid te declareren. Toegevoegd: `"dependencies": ["http"]`.
+- **`strings.json` / `translations/en.json` / `translations/nl.json`**: `hassfest` staat geen placeholder-variabelen toe die met enkele aanhalingstekens omsloten zijn (bv. `'{entry_title}'`) in de vier repair-issue-beschrijvingen (`zone_removed`, `tracked_entity_removed`, `provider_unavailable`, `notification_service_missing`). De aanhalingstekens zijn verwijderd; functioneel geen verschil in de uiteindelijke tekst.
+- **HACS-validatie**: signaleerde ontbrekende GitHub-repository-topics — dit is geen codewijziging maar een repository-instelling die buiten deze sessie om ingesteld moet worden (zie CI-toelichting).
+- **`.github/workflows/ci.yml`**: `GITHUB_TOKEN` toegevoegd aan de HACS-validatiestap (vereist door `hacs/action`, ontbrak in de eerste versie van de workflow).
+
+### Aanleiding
+De eerste echte CI-run (na v1.4.3) legde deze problemen bloot — precies waar de CI-workflow voor bedoeld is. Geen van de drie was zichtbaar via de lokale pyflakes/import-verificatie in de Windows-sandbox.
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Geen config-entry-impact.
+
 ## [1.4.3] - 2026-07-12
 
 ### Ontwikkeling (CI)
