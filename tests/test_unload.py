@@ -8,6 +8,7 @@ state kunnen (opdracht §28/§37).
 
 from __future__ import annotations
 
+import asyncio
 from unittest.mock import AsyncMock, patch
 
 from homeassistant.config_entries import ConfigEntryState
@@ -17,6 +18,28 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.vun_ev_charge_monitor.const import DOMAIN
 from custom_components.vun_ev_charge_monitor.models import ProviderFetchResult
+
+_UNLOAD_SETTLE_ATTEMPTS = 10
+
+
+async def _async_wait_until_removed(hass, entity_id: str) -> None:
+    """Wacht tot een entity-state volledig verdwenen is na unload.
+
+    Opruimen na `async_unload_platforms` loopt deels via achtergrondtaken
+    waarvan het aantal/de volgorde niet gegarandeerd is (bleek uit CI:
+    verschillende entities bleven per run op wisselende momenten nog even
+    'unavailable' staan i.p.v. direct None). In plaats van te gokken met een
+    vast aantal `async_block_till_done()`-aanroepen, pollen we kort totdat de
+    state daadwerkelijk weg is.
+    """
+    for _ in range(_UNLOAD_SETTLE_ATTEMPTS):
+        await hass.async_block_till_done(wait_background_tasks=True)
+        if hass.states.get(entity_id) is None:
+            return
+        await asyncio.sleep(0)
+    assert hass.states.get(entity_id) is None, (
+        f"{entity_id} nog niet verwijderd na {_UNLOAD_SETTLE_ATTEMPTS} pogingen"
+    )
 
 
 def _set_zone_and_person(hass) -> None:
@@ -50,9 +73,6 @@ async def test_unload_entry_removes_entities_and_stops_coordinator(
         assert entry.state is ConfigEntryState.LOADED
 
         assert await hass.config_entries.async_unload(entry.entry_id)
-        # Entiteitverwijdering (o.a. CoordinatorEntity-cleanup) loopt deels via
-        # een achtergrondtaak die een gewone async_block_till_done() niet
-        # opvangt — vereist expliciet wait_background_tasks=True.
         await hass.async_block_till_done(wait_background_tasks=True)
 
     assert entry.state is ConfigEntryState.NOT_LOADED
@@ -60,7 +80,7 @@ async def test_unload_entry_removes_entities_and_stops_coordinator(
     # Entity registry-entries blijven bewaard (HA-conventie), maar er mogen
     # geen actieve states meer zijn na unload.
     for entity in entities:
-        assert hass.states.get(entity.entity_id) is None
+        await _async_wait_until_removed(hass, entity.entity_id)
 
 
 async def test_reload_entry_is_idempotent(hass, mock_config_entry_data) -> None:
