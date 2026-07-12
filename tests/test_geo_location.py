@@ -9,6 +9,7 @@ op basis van beschikbaarheid, en lege-slot-gedrag.
 from __future__ import annotations
 
 from homeassistant.util import dt as dt_util
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.vun_ev_charge_monitor.const import DOMAIN
 from custom_components.vun_ev_charge_monitor.geo_location import (
@@ -21,12 +22,15 @@ from custom_components.vun_ev_charge_monitor.models import (
     DataQuality,
     Evse,
 )
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
 def _location(name: str, available_count: int, total_count: int) -> ChargeLocation:
     evses = tuple(
-        Evse(f"{name}-{i}", ChargePointStatus.AVAILABLE if i < available_count else ChargePointStatus.OCCUPIED, ())
+        Evse(
+            f"{name}-{i}",
+            ChargePointStatus.AVAILABLE if i < available_count else ChargePointStatus.OCCUPIED,
+            (),
+        )
         for i in range(total_count)
     )
     return ChargeLocation(

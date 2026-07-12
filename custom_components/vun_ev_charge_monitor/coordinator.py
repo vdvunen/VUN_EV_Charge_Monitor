@@ -126,7 +126,8 @@ class CoordinatorData:
 
 
 def _sort_key(location: ChargeLocation) -> tuple:
-    """Standaardsortering (opdracht §14): beschikbaar eerst, dichtstbij, hoogste vermogen, meest actueel."""
+    """Standaardsortering (opdracht §14): beschikbaar eerst, dichtstbij, hoogste
+    vermogen, meest actueel."""
     last_update_ts = (
         location.last_status_update.timestamp() if location.last_status_update else 0
     )

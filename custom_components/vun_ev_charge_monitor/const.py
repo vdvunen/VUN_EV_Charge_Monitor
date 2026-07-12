@@ -11,7 +11,7 @@ from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "vun_ev_charge_monitor"
-INTEGRATION_VERSION: Final = "1.4.2"
+INTEGRATION_VERSION: Final = "1.4.3"
 MANUFACTURER: Final = "Vincent van Unen"
 MODEL: Final = "VUN EV Charge Monitor"
 CONFIGURATION_URL: Final = "https://github.com/vdvunen/VUN_EV_Charge_Monitor"

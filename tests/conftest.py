@@ -14,9 +14,9 @@ import pytest
 
 from custom_components.vun_ev_charge_monitor.const import (
     CONF_CONNECTOR_TYPES,
+    CONF_LANGUAGE,
     CONF_MAX_DATA_AGE,
     CONF_MAX_RESULTS,
-    CONF_LANGUAGE,
     CONF_MIN_POWER_KW,
     CONF_NOTIFICATION_COOLDOWN,
     CONF_NOTIFICATION_TARGET,

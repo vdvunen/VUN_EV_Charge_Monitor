@@ -36,7 +36,10 @@ async def test_unload_entry_removes_entities_and_stops_coordinator(
     entry.add_to_hass(hass)
 
     fake_result = ProviderFetchResult(
-        locations=(), source_name="NDW DOT-NL", fetched_at=dt_util.utcnow(), realtime_available=False
+        locations=(),
+        source_name="NDW DOT-NL",
+        fetched_at=dt_util.utcnow(),
+        realtime_available=False,
     )
     with patch(
         "custom_components.vun_ev_charge_monitor.providers.ndw.NdwProvider.async_get_locations",
@@ -63,7 +66,10 @@ async def test_reload_entry_is_idempotent(hass, mock_config_entry_data) -> None:
     entry.add_to_hass(hass)
 
     fake_result = ProviderFetchResult(
-        locations=(), source_name="NDW DOT-NL", fetched_at=dt_util.utcnow(), realtime_available=False
+        locations=(),
+        source_name="NDW DOT-NL",
+        fetched_at=dt_util.utcnow(),
+        realtime_available=False,
     )
     with patch(
         "custom_components.vun_ev_charge_monitor.providers.ndw.NdwProvider.async_get_locations",

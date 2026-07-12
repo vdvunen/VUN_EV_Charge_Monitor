@@ -69,6 +69,4 @@ def passes_filters(
         return False
     if connector_types and not (location.connector_types & connector_types):
         return False
-    if min_power_kw and (location.max_power_kw or 0) < min_power_kw:
-        return False
-    return True
+    return not (min_power_kw and (location.max_power_kw or 0) < min_power_kw)

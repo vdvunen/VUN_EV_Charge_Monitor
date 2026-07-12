@@ -264,9 +264,8 @@ async def test_route_mode_route_error_raises_update_failed(hass) -> None:
     with patch(
         "custom_components.vun_ev_charge_monitor.coordinator.async_fetch_route",
         AsyncMock(side_effect=RouteError("boom")),
-    ):
-        with pytest.raises(UpdateFailed):
-            await coordinator._async_update_data()
+    ), pytest.raises(UpdateFailed):
+        await coordinator._async_update_data()
     assert coordinator.consecutive_failures == 1
 
 

@@ -28,7 +28,9 @@ from custom_components.vun_ev_charge_monitor.notifications import (
 )
 
 
-def _location(name: str, *, available: bool, distance_m: float, power_kw: float = 22.0) -> ChargeLocation:
+def _location(
+    name: str, *, available: bool, distance_m: float, power_kw: float = 22.0
+) -> ChargeLocation:
     status = ChargePointStatus.AVAILABLE if available else ChargePointStatus.OCCUPIED
     return ChargeLocation(
         provider="ndw",
@@ -53,7 +55,9 @@ def _location(name: str, *, available: bool, distance_m: float, power_kw: float 
     )
 
 
-def _coordinator_data(locations, *, realtime_available: bool = True, radius_m: float = 1500) -> CoordinatorData:
+def _coordinator_data(
+    locations, *, realtime_available: bool = True, radius_m: float = 1500
+) -> CoordinatorData:
     return CoordinatorData(
         locations=tuple(locations),
         fetched_at=dt_util.utcnow(),
@@ -127,7 +131,9 @@ def test_message_static_data_only_en() -> None:
 
 
 def test_message_no_locations_found_nl() -> None:
-    message = _build_message(_coordinator_data([]), zone_name="Woonwijk", max_results=5, language="nl")
+    message = _build_message(
+        _coordinator_data([]), zone_name="Woonwijk", max_results=5, language="nl"
+    )
     assert "geen laadlocaties gevonden" in message
 
 
@@ -144,11 +150,16 @@ def test_message_respects_max_results() -> None:
 
 
 async def test_send_notification_calls_notify_service(hass, mock_config_entry_data) -> None:
-    data = {**mock_config_entry_data, "notification_target": {"entity_id": ["notify.mobile_app_test"]}}
+    data = {
+        **mock_config_entry_data,
+        "notification_target": {"entity_id": ["notify.mobile_app_test"]},
+    }
     entry = MockConfigEntry(domain=DOMAIN, unique_id="zone.woonwijk", data=data)
     entry.add_to_hass(hass)
     hass.states.async_set(
-        "zone.woonwijk", "zoning", {"latitude": 52.37, "longitude": 4.89, "friendly_name": "Woonwijk"}
+        "zone.woonwijk",
+        "zoning",
+        {"latitude": 52.37, "longitude": 4.89, "friendly_name": "Woonwijk"},
     )
 
     coordinator_data = _coordinator_data([_location("P+R Centrum", available=True, distance_m=280)])

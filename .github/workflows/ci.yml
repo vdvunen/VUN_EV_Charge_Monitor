@@ -1,0 +1,60 @@
+# Developed by Vincent van Unen
+# Website: https://www.unen.nl
+# Email: code@unen.nl
+#
+# CI: draait de volledige testsuite op een Linux-runner — lost het
+# testgat op uit PRODUCTION_CHECK.md (de `hass`-fixture-tests konden
+# lokaal op Windows nooit uitgevoerd worden, zie test_coordinator.py e.a.).
+# Draait ook de officiële hassfest- en HACS-validatie.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Tests (pytest + lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: requirements_test.txt
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements_test.txt
+          pip install pyflakes ruff
+
+      - name: Lint (pyflakes)
+        run: python -m pyflakes custom_components tests
+
+      - name: Lint (ruff)
+        run: ruff check custom_components tests
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+  hassfest:
+    name: Home Assistant hassfest validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    name: HACS validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hacs/action@main
+        with:
+          category: integration

@@ -9,6 +9,15 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.4.3] - 2026-07-12
+
+### Ontwikkeling (CI)
+- **GitHub Actions CI-workflow toegevoegd** (`.github/workflows/ci.yml`): draait bij elke push/PR naar `main` de volledige testsuite (`pytest tests/`) op een Linux-runner, plus `pyflakes`/`ruff`-lint, de officiële Home Assistant `hassfest`-validatie en de officiële HACS-validatie-action. Dit lost het grootste openstaande testgat uit `PRODUCTION_CHECK.md` op: de `hass`-fixture-afhankelijke tests (`test_coordinator.py`, `test_config_flow.py`, `test_init.py`, `test_unload.py`, `test_diagnostics.py`, `test_sensors.py`, `test_zone_tracking.py`, `test_services.py` e.a.) konden tot nu toe nooit daadwerkelijk uitgevoerd worden in de Windows-ontwikkelomgeving (bekende `ProactorEventLoop`/`pytest-socket`-botsing) en draaiden alleen indirect via pyflakes/import-sweeps.
+- 18 bestaande lint-violaties (`ruff`, grotendeels regel-te-lang in testbestanden, plus twee `SIM103`-vereenvoudigingen in `providers/_common.py` en `zone_tracking.py`) opgeruimd zodat de eerste CI-run niet direct rood staat op onschuldige stijlkwesties. Geen gedragswijziging — uitsluitend formattering en twee mechanisch gelijkwaardige `if/return`-vereenvoudigingen naar `return not (...)`.
+
+### Rollback
+Verwijder `.github/workflows/ci.yml` om de CI-workflow uit te schakelen; geen impact op de integratie zelf. De lintopschoning is functioneel neutraal en hoeft niet teruggedraaid te worden.
+
 ## [1.4.2] - 2026-07-12
 
 ### Bugfix

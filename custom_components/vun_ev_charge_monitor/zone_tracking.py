@@ -188,6 +188,4 @@ def _is_zone_entry(old_state, new_state, zone_slug: str) -> bool:
         return False
     if old_state.state == zone_slug:
         return False
-    if old_state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-        return False
-    return True
+    return old_state.state not in (STATE_UNKNOWN, STATE_UNAVAILABLE)
