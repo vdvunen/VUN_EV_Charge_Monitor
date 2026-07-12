@@ -4,11 +4,17 @@ Website: https://www.unen.nl
 Email: code@unen.nl
 -->
 
-# Production Check — VUN EV Charge Monitor v1.0.0
+# Production Check — VUN EV Charge Monitor
 
 Eerlijke stand van zaken per controlepunt (opdracht §41 productiecheck).
 Waar iets niet (volledig) geverifieerd kon worden, staat dat expliciet
 vermeld — geen valse "alles groen"-claims.
+
+> **Let op:** dit document beschrijft de productiecheck zoals uitgevoerd bij
+> de initiële v1.0.0-oplevering. Zie `CHANGELOG.md` voor de actuele versie
+> (v1.4.2) en alle features die sindsdien zijn toegevoegd (kaartmarkers,
+> rijafstand, routegebaseerd zoeken). Een volledige herziening van dit
+> document naar de huidige stand staat nog open.
 
 ## Security
 

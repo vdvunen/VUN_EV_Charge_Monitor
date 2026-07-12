@@ -11,10 +11,10 @@ laadpunten rond een Home Assistant-zone ophaalt, filtert en toont, en een
 melding stuurt zodra een gevolgde persoon of device tracker die zone
 binnenkomt.
 
-> **Status:** v1.0.0 — alle fases (1 t/m 6) opgeleverd. Zie
-> `FASE1-ONDERZOEK-EN-ARCHITECTUUR.md`, `CHANGELOG.md` en
-> `PRODUCTION_CHECK.md` voor de volledige projectgeschiedenis, gemaakte
-> keuzes en openstaande verificatiepunten.
+> **Status:** actief onderhouden, huidige versie **v1.4.2**. Zie
+> `CHANGELOG.md` voor de volledige, actuele versiehistorie,
+> `FASE1-ONDERZOEK-EN-ARCHITECTUUR.md` voor de architectuuronderbouwing en
+> `PRODUCTION_CHECK.md` voor openstaande verificatiepunten.
 
 ## Projectomschrijving
 
