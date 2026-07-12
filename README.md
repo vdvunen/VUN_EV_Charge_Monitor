@@ -165,6 +165,13 @@ Privacy.
 - Open Charge Map levert nooit actuele bezetting.
 - NDW's per-aansluiting-status is een gedocumenteerde, best-effort
   benadering op basis van geaggregeerde tellingen.
+- **Geen Fastned, Allego, Shell Recharge of Vattenfall InCharge als
+  provider.** Fastned en Allego bieden geen publieke API (reverse-engineering
+  van een niet-publieke API valt buiten de securityprincipes van dit
+  project). Shell Recharge en Vattenfall InCharge hebben wél een
+  developer-portal, maar zelfregistratie voor een bruikbare API-key bleek in
+  de praktijk niet mogelijk (2026-07-12). Wordt heroverwogen zodra
+  zelfregistratie wél lukt of een van beide partijen publieke toegang biedt.
 - Zie `PRODUCTION_CHECK.md` voor de volledige, eerlijke stand van
   testdekking en openstaande verificatiepunten.
 

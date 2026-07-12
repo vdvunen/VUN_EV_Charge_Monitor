@@ -157,6 +157,22 @@ def _tracking_schema(defaults: dict[str, Any]) -> vol.Schema:
 
 
 def _search_schema(defaults: dict[str, Any]) -> vol.Schema:
+    # EntitySelector accepteert geen lege string als "geen selectie" — dat
+    # geeft een client-side formulierfout ("Entity is neither a valid entity
+    # ID nor a valid UUID") die de hele stap blokkeert. Zonder eerder
+    # opgeslagen waarde laten we `default` daarom volledig weg i.p.v. "" mee
+    # te geven (gevonden n.a.v. een gebruikersmelding: het "geen API-key"-
+    # foutmelding leek het probleem, maar dit veld blokkeerde het formulier
+    # al vóór verzenden).
+    route_destination_zone_key: vol.Marker
+    existing_route_destination_zone = defaults.get(CONF_ROUTE_DESTINATION_ZONE)
+    if existing_route_destination_zone:
+        route_destination_zone_key = vol.Optional(
+            CONF_ROUTE_DESTINATION_ZONE, default=existing_route_destination_zone
+        )
+    else:
+        route_destination_zone_key = vol.Optional(CONF_ROUTE_DESTINATION_ZONE)
+
     return vol.Schema(
         {
             vol.Required(
@@ -251,10 +267,9 @@ def _search_schema(defaults: dict[str, Any]) -> vol.Schema:
             ): selector.TextSelector(
                 selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
             ),
-            vol.Optional(
-                CONF_ROUTE_DESTINATION_ZONE,
-                default=defaults.get(CONF_ROUTE_DESTINATION_ZONE, ""),
-            ): selector.EntitySelector(selector.EntitySelectorConfig(domain="zone")),
+            route_destination_zone_key: selector.EntitySelector(
+                selector.EntitySelectorConfig(domain="zone")
+            ),
             vol.Required(
                 CONF_ROUTE_CORRIDOR_M,
                 default=defaults.get(CONF_ROUTE_CORRIDOR_M, DEFAULT_ROUTE_CORRIDOR_M),

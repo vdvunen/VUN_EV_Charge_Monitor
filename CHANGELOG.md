@@ -9,6 +9,16 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.4.2] - 2026-07-12
+
+### Bugfix
+- **Config flow (`config_flow.py`)**: het optionele veld "Bestemmingszone route" (`route_destination_zone`, zoekopties-stap) kreeg bij een verse setup een lege string (`""`) als standaardwaarde mee aan de `EntitySelector`. Home Assistant's entity-picker accepteert een lege string echter niet als "geen selectie" — dit gaf een blokkerende client-side formulierfout ("Entity is neither a valid entity ID nor a valid UUID") die de hele zoekopties-stap onbruikbaar maakte, **ook als je geen route wilde instellen**. Gevonden n.a.v. een gebruikersmelding die aanvankelijk leek op een OpenRouteService-API-key-probleem (de foutmelding verscheen tegelijk met de key-invoer), maar de key bleek — geverifieerd tegen de echte OpenRouteService Directions API met de productiecode uit `route.py` — volledig geldig en functioneel. Het formulier zelf blokkeerde vóór verzenden, onafhankelijk van de ORS-key.
+- Opgelost door bij een verse/lege waarde helemaal geen `default` aan het schemaveld mee te geven (i.p.v. `default=""`) — het standaardpatroon voor optionele `EntitySelector`-velden in Home Assistant. Een reeds opgeslagen bestemmingszone (bij reconfigureren/opties) blijft wel correct als standaardwaarde getoond.
+- Geverifieerd tegen de echte `_search_schema()`-functie: bij een verse setup ontbreekt de `default` nu volledig; bij een bestaande waarde blijft die intact.
+
+### Rollback
+Verwijder `custom_components/vun_ev_charge_monitor/`, herstel eventueel eerdere back-up, herstart Home Assistant. Geen config-entry-impact. **Let op:** terugzetten naar v1.4.1 of eerder herintroduceert de geblokkeerde zoekopties-stap.
+
 ## [1.4.1] - 2026-07-11
 
 ### Bugfix
