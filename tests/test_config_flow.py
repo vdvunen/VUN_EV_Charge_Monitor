@@ -157,6 +157,59 @@ async def test_missing_tracked_entity_shows_error(hass) -> None:
     assert result["errors"] == {"base": "invalid_entity"}
 
 
+async def test_reconfigure_updates_options_not_shadowed(
+    hass, mock_config_entry_data
+) -> None:
+    """Regressie: options (eerder gezet via Configureren) overschaduwden
+    reconfigure-wijzigingen omdat _get_config_value options voorrang geeft
+    boven data, terwijl reconfigure alleen naar data schreef."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="zone.woonwijk",
+        data=mock_config_entry_data,
+        options=mock_config_entry_data,
+    )
+    entry.add_to_hass(hass)
+    _set_zone_and_person(hass)
+
+    with patch(
+        "custom_components.vun_ev_charge_monitor.config_flow._async_test_provider_connection",
+        AsyncMock(return_value=None),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={
+                "source": config_entries.SOURCE_RECONFIGURE,
+                "entry_id": entry.entry_id,
+            },
+        )
+        assert result["step_id"] == "user"
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], _USER_STEP_INPUT
+        )
+        assert result["step_id"] == "tracking"
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], _TRACKING_STEP_INPUT
+        )
+        assert result["step_id"] == "search"
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {**_SEARCH_STEP_INPUT, "update_interval": 900}
+        )
+        assert result["step_id"] == "notifications"
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], _NOTIFICATIONS_STEP_INPUT
+        )
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.options["update_interval"] == 900
+    assert entry.data["update_interval"] == 900
+
+
 async def test_options_flow_updates_radius(hass, mock_config_entry_data) -> None:
     entry = MockConfigEntry(
         domain=DOMAIN, unique_id="zone.woonwijk", data=mock_config_entry_data

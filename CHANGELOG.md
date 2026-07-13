@@ -9,6 +9,17 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.4.6] - 2026-07-13
+
+### Bugfix
+- **`config_flow.py`**: "Herconfigureren" (reconfigure, drie-puntjes-menu) schreef wijzigingen alleen naar `config_entry.data`. Zodra een entry ooit via "Configureren" (opties-flow, tandwiel-icoon) was opgeslagen, bevatte `config_entry.options` een volledige kopie van de configuratie — en `coordinator._get_config_value()` geeft `options` altijd voorrang boven `data`. Gevolg: elke instelling die via reconfigure werd aangepast (o.a. `update_interval`) bleef onzichtbaar overschaduwd door de oudere `options`-waarde. Alleen `provider`/`zone`/`api_key`/`simulation_mode` werkten wel, omdat die rechtstreeks uit `entry.data` gelezen worden (`__init__.py::_build_provider`, `async_setup_entry`) en dus niet via die voorrangsregel lopen.
+- Fix: reconfigure schrijft nu zowel naar `data` als naar `options` (`async_update_reload_and_abort(..., data=self._data, options=self._data)`), en de formuliervelden bij reconfigure tonen voortaan de effectieve configuratie (`data` + `options` gemerged, options wint) in plaats van alleen `data` — zodat het formulier ook waarden toont die eerder via Configureren zijn gezet.
+- Nieuwe helper `_effective_config()` vervangt de gedupliceerde merge-logica die eerder alleen in `OptionsFlow._current()` stond (opgeruimd, geen dubbele logica meer).
+- **`tests/test_config_flow.py`**: regressietest `test_reconfigure_updates_options_not_shadowed` toegevoegd — zet eerst options via een gesimuleerde Configureren-sessie, reconfigureert daarna met een andere `update_interval` en verifieert dat zowel `entry.data` als `entry.options` de nieuwe waarde bevatten.
+
+### Rollback
+Herstel v1.4.5 van `config_flow.py` (en verwijder de nieuwe test). Geen migratie nodig: bestaande config-entries blijven geldig, dit wijzigt alleen het opslaggedrag van de reconfigure-flow zelf.
+
 ## [1.4.5] - 2026-07-13
 
 ### Toegevoegd

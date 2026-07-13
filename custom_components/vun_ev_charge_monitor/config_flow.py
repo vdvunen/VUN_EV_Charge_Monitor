@@ -114,6 +114,11 @@ _TRACKED_DOMAINS = ("person", "device_tracker")
 # --------------------------------------------------------------------------
 
 
+def _effective_config(entry: ConfigEntry) -> dict[str, Any]:
+    """Data+options gemerged, options heeft voorrang (zie coordinator._get_config_value)."""
+    return {**entry.data, **entry.options}
+
+
 def _user_schema(defaults: dict[str, Any]) -> vol.Schema:
     return vol.Schema(
         {
@@ -482,7 +487,7 @@ class VunEvChargeMonitorConfigFlow(ConfigFlow, domain=DOMAIN):
         reconfigure_entry = (
             self._get_reconfigure_entry() if self.source == SOURCE_RECONFIGURE else None
         )
-        defaults = reconfigure_entry.data if reconfigure_entry else {}
+        defaults = _effective_config(reconfigure_entry) if reconfigure_entry else {}
 
         if user_input is not None:
             zone_coords = _validate_zone(self.hass, user_input[CONF_ZONE])
@@ -518,7 +523,7 @@ class VunEvChargeMonitorConfigFlow(ConfigFlow, domain=DOMAIN):
         reconfigure_entry = (
             self._get_reconfigure_entry() if self.source == SOURCE_RECONFIGURE else None
         )
-        defaults = reconfigure_entry.data if reconfigure_entry else self._data
+        defaults = _effective_config(reconfigure_entry) if reconfigure_entry else self._data
 
         if user_input is not None:
             if not _validate_tracked_entities(
@@ -540,7 +545,7 @@ class VunEvChargeMonitorConfigFlow(ConfigFlow, domain=DOMAIN):
         reconfigure_entry = (
             self._get_reconfigure_entry() if self.source == SOURCE_RECONFIGURE else None
         )
-        defaults = reconfigure_entry.data if reconfigure_entry else self._data
+        defaults = _effective_config(reconfigure_entry) if reconfigure_entry else self._data
 
         if user_input is not None:
             search_error = _validate_search_input(self.hass, user_input)
@@ -561,7 +566,7 @@ class VunEvChargeMonitorConfigFlow(ConfigFlow, domain=DOMAIN):
         reconfigure_entry = (
             self._get_reconfigure_entry() if self.source == SOURCE_RECONFIGURE else None
         )
-        defaults = reconfigure_entry.data if reconfigure_entry else self._data
+        defaults = _effective_config(reconfigure_entry) if reconfigure_entry else self._data
 
         if user_input is not None:
             if not _validate_notification_target(
@@ -571,8 +576,13 @@ class VunEvChargeMonitorConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 self._data.update(user_input)
                 if reconfigure_entry is not None:
+                    # options heeft voorrang in _get_config_value; zonder deze ook
+                    # bij te werken zouden eerder via Configureren gezette options
+                    # deze reconfigure-wijzigingen (behalve provider/zone/api_key/
+                    # simulation_mode, die rechtstreeks uit `data` gelezen worden)
+                    # blijven overschaduwen.
                     return self.async_update_reload_and_abort(
-                        reconfigure_entry, data=self._data
+                        reconfigure_entry, data=self._data, options=self._data
                     )
                 zone_state = self.hass.states.get(self._data[CONF_ZONE])
                 title = zone_state.name if zone_state else self._data[CONF_ZONE]
@@ -653,13 +663,10 @@ class VunEvChargeMonitorOptionsFlow(OptionsFlowWithReload):
     def __init__(self) -> None:
         self._data: dict[str, Any] = {}
 
-    def _current(self) -> dict[str, Any]:
-        return {**self.config_entry.data, **self.config_entry.options}
-
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        self._data = self._current()
+        self._data = _effective_config(self.config_entry)
         return await self.async_step_user()
 
     async def async_step_user(
