@@ -76,7 +76,12 @@ verstuurd.
 - Taal van de melding (Nederlands/Engels).
 
 Alle instellingen zijn achteraf aanpasbaar via **Configureren** op de
-integratietegel.
+integratietegel (doorloopt dezelfde vier stappen). Dit is te onderscheiden van
+**Herconfigureren** (drie-puntjes-menu op de integratietegel): dat is bedoeld
+om zone/provider/API-key te wijzigen, maar doorloopt sinds v1.4.6 ook alle
+overige stappen en past dezelfde instellingen aan als **Configureren** — beide
+routes zijn nu gelijkwaardig. Vóór v1.4.6 werden wijzigingen via
+Herconfigureren soms genegeerd zodra **Configureren** al eens gebruikt was.
 
 ## Sensoren
 
@@ -97,8 +102,8 @@ integratietegel.
 | API-status | `ok`, `cannot_connect`, `invalid_auth`, `rate_limited` of `unknown` |
 
 De sensor "Beschikbare laadlocaties" heeft een attribuut `top_locations` met
-een compacte lijst (max. 5) van naam, afstand, beschikbaarheid en vermogen —
-handig voor eigen dashboardkaarten of automatiseringen.
+een compacte lijst (max. 5) van naam, adres, afstand, beschikbaarheid en
+vermogen — handig voor eigen dashboardkaarten of automatiseringen.
 
 Standaard uitgeschakelde sensoren kun je alsnog activeren via de
 entiteiteninstellingen.

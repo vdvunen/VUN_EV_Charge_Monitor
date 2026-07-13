@@ -100,7 +100,12 @@ verloopt uitsluitend via de UI — geen YAML.
     identiek werkt (idempotent).
 19. Voer `get_nearby_chargers` uit via Ontwikkelaarstools → Acties, en
     controleer de servicerespons.
-20. Draai de geautomatiseerde testsuite (zie hieronder).
+20. Wijzig een instelling (bv. update-interval) via **Herconfigureren**
+    (drie-puntjes-menu) en controleer na herladen dat de nieuwe waarde
+    daadwerkelijk actief is — niet alleen in het formulier, maar ook in het
+    werkelijke pollinggedrag (sinds v1.4.6; voorheen kon dit stil genegeerd
+    worden als **Configureren** al eerder gebruikt was).
+21. Draai de geautomatiseerde testsuite (zie hieronder).
 
 ## Geautomatiseerde tests draaien
 
