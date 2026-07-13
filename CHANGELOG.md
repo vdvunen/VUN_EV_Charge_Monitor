@@ -9,6 +9,14 @@ Email: code@unen.nl
 Alle relevante wijzigingen aan dit project worden hier bijgehouden.
 Versiebeheer volgt [Semantic Versioning](https://semver.org/).
 
+## [1.4.5] - 2026-07-13
+
+### Toegevoegd
+- **`sensor.py` (`available_locations`)**: `address` toegevoegd aan de `top_locations`-attribuutlijst (naast `name`, `distance_m`, `available`, `total`, `max_power_kw`, `operator`), begrensd op dezelfde `_MAX_NAME_LENGTH` (60 tekens) als `name`/`operator`. Voorheen was het adres per top-locatie alleen indirect af te leiden (via `best_location_address`-sensor of geo-locatie-entities), niet in de compacte lijst zelf.
+
+### Rollback
+Zet `sensor.py` terug naar de versie zonder `"address"`-regel in `_top_locations_attributes`, of herstel v1.4.4. Geen config-entry- of database-impact; alleen een extra sleutel in een bestaand entity-attribuut.
+
 ## [1.4.4] - 2026-07-12
 
 ### Bugfix (gevonden door de eerste CI-run, v1.4.3)

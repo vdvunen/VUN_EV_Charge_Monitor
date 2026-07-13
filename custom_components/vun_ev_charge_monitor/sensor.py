@@ -51,6 +51,7 @@ def _top_locations_attributes(data: CoordinatorData) -> dict[str, Any]:
         "top_locations": [
             {
                 "name": loc.name[:_MAX_NAME_LENGTH],
+                "address": (loc.address or "")[:_MAX_NAME_LENGTH] or None,
                 "distance_m": round(loc.distance_m) if loc.distance_m is not None else None,
                 "available": loc.available_evses,
                 "total": loc.total_evses,
